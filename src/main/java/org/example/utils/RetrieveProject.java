@@ -17,5 +17,4 @@ public class RetrieveProject {
                 this.projectDir = "C:\\Users\\Roberto\\Documents\\GitHub\\bookkeeper";
             }
         }
-
 }
