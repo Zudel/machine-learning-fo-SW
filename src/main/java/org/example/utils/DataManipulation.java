@@ -5,9 +5,13 @@ import java.text.SimpleDateFormat;
 import java.util.Date;
 
    public class DataManipulation {
+       SimpleDateFormat formatoData;
     public String DataManipulationFormat(String summary) throws ParseException {
-        // Definizione del formato della data
-        SimpleDateFormat formatoData = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss.SSSZ");
+        if(summary.contains("T")) {
+            formatoData = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss.SSSZ");
+        } else {
+            formatoData = new SimpleDateFormat("yyyy-MM-dd");
+        }
 
 
         // Conversione della stringa in una data
