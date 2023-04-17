@@ -1,4 +1,4 @@
-package org.example.utils;
+package Utils;
 
 import org.apache.htrace.shaded.fasterxml.jackson.databind.JsonNode;
 import org.apache.htrace.shaded.fasterxml.jackson.databind.ObjectMapper;
