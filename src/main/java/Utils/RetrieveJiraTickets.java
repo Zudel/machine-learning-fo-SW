@@ -31,7 +31,7 @@ public class RetrieveJiraTickets {
 
 
     public List<IssueTicket> retrieveTickets(String projName) throws IOException, ParseException {
-       String injectedVersion;
+       String injectedVersion = null;
        String injectedVersionDate;
        int count = 0;
        int countAV = 0;
@@ -81,7 +81,9 @@ public class RetrieveJiraTickets {
                 else {  //se la lista è vuota
                     injectedVersion = "N/A";
                     avList.clear();
-                }*/injectedVersion = "N/A";
+                }*/
+                if(listAV.isEmpty())
+                    injectedVersion = "N/A";
                 //estraggo il nome della versione in cui il bug è stato risolto e la sua data di rilascio
                 key = issues.getJSONObject(i%1000).get("key").toString(); // In general, the toString method returns a string that "textually represents" this object. The result should be a concise but informative representation that is easy for a person to read.System.out.println(key);
                 String fixVersion=issues.getJSONObject(i%1000).getJSONObject("fields").getJSONArray("fixVersions").getJSONObject(0).get("name").toString();
@@ -114,9 +116,15 @@ public class RetrieveJiraTickets {
                         int ivIndex = mr.getReleaseIndex(releases, ivDate);
                         int fvIndex = mr.getReleaseIndex(releases, fvDate);
                         int ovIndex = mr.getReleaseIndex(releases, openingRelease.getDate());
-                        iv.setId(ivIndex);
+                        if(iv.getReleaseName().equals("N/A"))
+                            iv.setId(0);
+                        else
+                            iv.setId(ivIndex);
                         fv.setId(fvIndex);
                         ov.setId(ovIndex);
+                        System.out.println("Bug: " + key + " - IV: " + iv.getReleaseName() + " - OV: " + ov.getReleaseName() + " - FV: " + fv.getReleaseName());
+                        System.out.println("Bug: " + key + " - IV: " + iv.getId() + " - OV: " + ov.getId() + " - FV: " + fv.getId());
+
                         
 
                         IssueTicket ticket = new IssueTicket(key, iv, fv, ov, avList);
@@ -128,8 +136,6 @@ public class RetrieveJiraTickets {
        /* System.out.println("Total bugs: " + count);
         System.out.println("Total bugs with available AV: " + countAV);
         System.out.println("Total bugs with no avalaible AV: " + (count-countAV));*/
-
-
         return tickets;
          }
 

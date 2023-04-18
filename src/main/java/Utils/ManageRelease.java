@@ -58,12 +58,12 @@ public class ManageRelease {
 
     //get index of release in releasesList given its date
     public int getReleaseIndex(List<Release> releasesList, Date releaseDate) throws ParseException {
-        int index;
+        int index = 0;
         for(Release release : releasesList) {
-            if(release.getDate().equals(releaseDate)) {
+            if(release.getDate().equals(releaseDate) && !release.getReleaseName().equals("N/A")) {
                 index = release.getId();
             }
         }
-        return -1;
+        return index;
     }
 }

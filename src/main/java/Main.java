@@ -1,3 +1,4 @@
+import Control.Proportion;
 import Entity.IssueTicket;
 import Entity.Release;
 import Utils.ManageRelease;
@@ -28,7 +29,14 @@ public static void main(String[] args) throws IOException, ParseException {
     List<Release> releases = manageRelease.retrieveReleases(projName); //lista delle release ordinate per data di rilascio crescente (dal più vecchio al più recente)
     //stampo la lista di release
     for (Release release : releases) {
-        System.out.println(release.getReleaseName()+" index: "+ release.getId() + " Date: " + release.getDate());
+        if (release.getReleaseName().equals("N/A"))
+            release.setId(0);
+        System.out.println(release.getReleaseName() + " index: " + release.getId() + " Date: " + release.getDate());
+
+        System.out.println("-------------------------------------------------");
+
+        Proportion proportion = new Proportion();
+        System.out.println(proportion.computeProportion(issueTickets));
     }
 }
 }

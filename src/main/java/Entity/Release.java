@@ -23,8 +23,6 @@ public class Release {
     public Release(int id, String name, Date date) throws ParseException {
         this.releaseidex = id;
         this.releaseName = name;
-        DataManipulation dataManipulation = new DataManipulation();
-        String data = dataManipulation.convertDate(date);
         this.date = date;
     }
 
@@ -42,9 +40,6 @@ public class Release {
 
 
     public Date getDate() throws ParseException {
-        DataManipulation dataManipulation = new DataManipulation();
-        String data = dataManipulation.convertDate(date);
-        Date date = dataManipulation.convertStringToDate(data);
         return date;
     }
 

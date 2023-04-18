@@ -12,7 +12,7 @@ import java.util.List;
 
 public class Proportion {
     private static String projName = "BOOKKEEPER";
-    Proportion(){
+    public Proportion(){
     }
 
     public static Double computeProportion(List<IssueTicket> issues) throws IOException, ParseException {
@@ -37,9 +37,6 @@ public class Proportion {
 
     }
 
-    public double Proportion_Incremental(double total, double incremental){
-        return (incremental/total)*100;
-    }
 
 
 
