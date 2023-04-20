@@ -1,14 +1,7 @@
 package Entity;
 
-import Utils.DataManipulation;
-import Utils.ManageRelease;
-import org.json.JSONArray;
-import org.json.JSONException;
-import org.json.JSONObject;
 
-import java.io.IOException;
 import java.text.ParseException;
-import java.text.SimpleDateFormat;
 import java.util.*;
 
 public class Release {
@@ -24,6 +17,10 @@ public class Release {
         this.releaseidex = id;
         this.releaseName = name;
         this.date = date;
+    }
+
+    public Release(String fixVersion) {
+        this.releaseName = fixVersion;
     }
 
     public String getReleaseName() {

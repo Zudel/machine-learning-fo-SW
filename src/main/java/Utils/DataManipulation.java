@@ -31,7 +31,12 @@ public class DataManipulation {
     }
     //convert la data in formato stringa del tipo "dd/MM/yyyy" in un oggetto di tipo Date
     public Date convertStringToDate(String dataString) throws ParseException {
-        formatoData = new SimpleDateFormat("dd/MM/yyyy");
+        if(dataString.contains("T")) {
+            formatoData = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss.SSSZ");
+        }
+        else {
+            formatoData = new SimpleDateFormat("dd/MM/yyyy");
+        }
         data = formatoData.parse(dataString);
         return data;
     }

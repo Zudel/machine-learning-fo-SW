@@ -7,36 +7,37 @@ import Utils.RetrieveJiraTickets;
 
 import java.io.IOException;
 import java.text.ParseException;
+import java.util.ArrayList;
 import java.util.List;
 
 public class Main {
-    private static String projName = "BOOKKEEPER";
-public static void main(String[] args) throws IOException, ParseException {
+
+    private int countConsistentIssue = 0;
+    private int countInconsistentIssue = 0;
+public static void  main(String[] args) throws IOException, ParseException {
     RetrieveJiraTickets retrieveJiraTickets = new RetrieveJiraTickets();
-    List<IssueTicket> issueTickets = retrieveJiraTickets.retrieveTickets("BOOKKEEPER");
-    //stampo la lista di ticket
-    /*for (IssueTicket issueTicket : issueTickets) {
-        System.out.println(issueTicket.getKey());
-        System.out.println(issueTicket.getInjectedVersion());
-        System.out.println(issueTicket.getFixVersion());
-        System.out.println(issueTicket.getIvDate());
-        System.out.println(issueTicket.getOpDate());
-        System.out.println(issueTicket.getFxDate());
-        System.out.println(issueTicket.getAvList());
-        System.out.println("-------------------------------------------------");
-    }*/
-    ManageRelease manageRelease = new ManageRelease();
-    List<Release> releases = manageRelease.retrieveReleases(projName); //lista delle release ordinate per data di rilascio crescente (dal più vecchio al più recente)
-    //stampo la lista di release
-    for (Release release : releases) {
-        if (release.getReleaseName().equals("N/A"))
-            release.setId(0);
-        System.out.println(release.getReleaseName() + " index: " + release.getId() + " Date: " + release.getDate());
+    String projNameB = "BOOKKEEPER";
+    String projNameA = "AVRO";
 
-        System.out.println("-------------------------------------------------");
 
-        Proportion proportion = new Proportion();
-        System.out.println(proportion.computeProportion(issueTickets));
-    }
+    //calcolo la proporzione
+
+    //calcolo il predicted IV per ogni ticket
+    List<IssueTicket> allIssueTicketsB = retrieveJiraTickets.retrieveTickets(projNameB);
+    List<IssueTicket> allIssueTicketsA = retrieveJiraTickets.retrieveTickets(projNameA);
+    List<IssueTicket> consistentIssueA = retrieveJiraTickets.retrieveConsistentTickets(allIssueTicketsA);
+    List<IssueTicket> consistentIssueB = retrieveJiraTickets.retrieveConsistentTickets(allIssueTicketsB);
+    allIssueTicketsA = retrieveJiraTickets.retrieveTickets(projNameA);
+    int numConsistentIssueB = consistentIssueB.size();
+    int numConsistentIssueA = consistentIssueA.size();
+    int numIssueB = allIssueTicketsB.size();
+    int numIssueA = allIssueTicketsA.size();
+
+    System.out.println("Numero di ticket consistenti per BOOKKEEPER: " + numConsistentIssueB);
+    System.out.println("Numero di ticket consistenti per AVRO: " + numConsistentIssueA);
+    System.out.println("Percentuale di ticket consistenti per BOOKKEEPER: " +(double) (numConsistentIssueB/numIssueB)*100);
+    System.out.println("Percentuale di ticket consistenti per AVRO: " +(double) ((numConsistentIssueA/numIssueA)*100));
+
+
 }
 }
