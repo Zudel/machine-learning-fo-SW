@@ -3,39 +3,34 @@ package Control;
 import Entity.IssueTicket;
 import Entity.Release;
 import Utils.EnumProjects;
+import Utils.ManageRelease;
 import Utils.RetrieveJiraTickets;
 
 import java.io.IOException;
 import java.text.ParseException;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 import static java.lang.Math.*;
 
 public class Proportion {
     private String projName = "BOOKKEEPER";
-
-    public Proportion() {
-    }
+    private static int  THRESHOLDCOLDSTART = 5;
+    private double MedianProportionValue;
 
     public Double computeProportion(List<IssueTicket> issues) throws IOException, ParseException {
         double propValue = 0.0;
         List<Double> proportions = new ArrayList<>(); //List of proportion values.
         for (IssueTicket issue : issues) {
-
             //P = (FV-IV)/(FV-OV)
             double prop;
-            if (issue.getFixVersion().getId() - issue.getOpeningVersion().getId() == 0) {
+            if (issue.fixVersion.getId() - issue.openingVersion.getId() <= 0) {
                 prop = (1.0) * (issue.getFixVersion().getId() - issue.getInjectedVersion().getId()) / (1.0); //if the denominator is 0, we set FV - OV to 1
-            } else {
+            }
+            else {
                 prop = (1.0) * (issue.getFixVersion().getId() - issue.getInjectedVersion().getId()) / (issue.getFixVersion().getId() - issue.getOpeningVersion().getId());
 
             }
-            if (prop >= 1.0) {    //P cannot be less than 1
-                proportions.add(prop);
-            }
+            proportions.add(prop); //add the proportion value to the list of proportion values for each issue ticket
 
         }
         //Return the average among all the proportion values
@@ -44,27 +39,19 @@ public class Proportion {
             propSum = propSum + prop;
         }
         propValue = propSum / proportions.size();
-
-
-        return propValue;
+        return propValue; //return the average among all the proportion values
     }
 
     //Proportion_ColdStart method
-    public double proportionColdstart() {
+    public double proportionColdstart() throws IOException, ParseException {
         Map<EnumProjects, Double> enumMap = new HashMap<>();
-        double MedianProportionValue = 0.0;
+        RetrieveJiraTickets retrieveJiraTickets = new RetrieveJiraTickets();
         List<IssueTicket> issueTickets;
+
         for (EnumProjects enumProjects : EnumProjects.values()) {
-            try {
-                RetrieveJiraTickets retrieveJiraTickets = new RetrieveJiraTickets();
-                issueTickets = retrieveJiraTickets.retrieveTickets(enumProjects.toString());
+            issueTickets = retrieveJiraTickets.retrieveTickets(enumProjects.toString());
                 List<IssueTicket> consistentIssue = retrieveJiraTickets.retrieveConsistentTickets(issueTickets);
                 enumMap.put(enumProjects, computeProportion(consistentIssue));
-            } catch (IOException e) {
-                e.printStackTrace();
-            } catch (ParseException e) {
-                e.printStackTrace();
-            }
         }
         //compute the median of the proportion values of all the projects
 
@@ -83,7 +70,7 @@ public class Proportion {
      * equals OV, then IV equals FV. However, recall we excluded defects that were not
      * post-release. Therefore, we set FV − OV equal to 1 to assure IV is not equal to FV.
      */
-    public List<IssueTicket> computePredictedIVWithColdstart(List<IssueTicket> issueTicket, List<Release> releases) throws ParseException {
+    public void computePredictedIVWithColdstart(IssueTicket issue, List<Release> releases) throws ParseException, IOException {
         double P_ColdStart = proportionColdstart(); //compute the P_ColdStart value
         int predictedIV;
         //stampa tutte le release
@@ -91,19 +78,6 @@ public class Proportion {
             System.out.println("Release: " + release.getReleaseName() + " id: " + release.getId() + " date: " + release.getDate());
         }
         System.out.println("P_ColdStart: " + P_ColdStart);
-        List<IssueTicket> issueTicketsWithIv = new ArrayList<>();
-        issueTicketsWithIv.addAll(issueTicket);
-        /*for (IssueTicket Ticket : issueTicket) {
-            System.out.println("key:" + Ticket.getKey());
-            System.out.println("iv: " + Ticket.getInjectedVersion().getId());
-            System.out.println("fv: "+Ticket.getFixVersion().getId());
-            System.out.println("ov: "+Ticket.getOpeningVersion().getId());
-            System.out.println("iv date" +Ticket.getIvDate());
-            System.out.println("ope date: "+ Ticket.getOpDate());
-            System.out.println("fix date: "+Ticket.getFxDate());
-            System.out.println("-------------------------------------------------");
-        }*/
-        for(IssueTicket issue : issueTicketsWithIv){
             if(issue.injectedVersion.getReleaseName().equals("N/A") && issue.fixVersion.getId() != 0){
                 if(issue.fixVersion.getId() - issue.openingVersion.getId() == 0)
                     predictedIV= 1;
@@ -116,10 +90,69 @@ public class Proportion {
 
             }
 
+
+    }
+    /**Proportion_Increment:
+     (i) For each version R, we computed P_Increment as the average P among defects
+     fixed in versions 1 to R-1.
+     (ii) We used the P_ColdStart for P_Increment values containing less than five defects
+     on average.
+     (iii) For each defect in each version, we computed the IV as IV = (FV − OV ) ∗
+     P_Increment . If FV equals OV, then IV equals FV. However, recall we excluded
+     defects that were not post-release. Therefore, we set FV − OV equal to 1 to assure
+     IV is not equal to FV.
+     (iv) For each defect, we label each version before the IV as not affected.We label each
+     version from the IV to the FV as affected. The FV is labeled not affected.
+     */
+    public void proportionIncremental(List<IssueTicket> allIssueTickets, List<IssueTicket> issueTicketsWithIV) throws ParseException, IOException {
+        double P_increment;
+        double P_ColdStart = proportionColdstart(); //compute the P_ColdStart value
+        int predictedIV;
+        int countWithIV;
+
+
+
+        System.out.println("P_ColdStart: " + P_ColdStart);
+        for (IssueTicket issue : allIssueTickets) {
+            countWithIV = 0;
+            for (IssueTicket issueWithIV : issueTicketsWithIV) { //count the number of tickets with IV in the list of all tickets (to compute the P_increment)
+                if(issue.fixVersion.getDate() != null && issue.fixVersion.getDate().after(issueWithIV.fixVersion.getDate()) && issue.injectedVersion.getReleaseName().equals("N/A"))
+                    countWithIV++;
+            }
+            if(countWithIV < THRESHOLDCOLDSTART) //if the number of tickets with IV is less than the threshold, we use the P_ColdStart value
+                P_increment = P_ColdStart;
+            else //otherwise, we compute the P_increment value
+                P_increment = computeProportion(issueTicketsWithIV);
+            if(issue.injectedVersion.getReleaseName().equals("N/A")) {
+                predictedIV = (int) floor((issue.fixVersion.getId() - issue.openingVersion.getId()) * P_increment); //compute the IV for each ticket in the list and take the floor value
+
+                issue.injectedVersion.setId(predictedIV); //compute the IV for each ticket in the list and take the floor value
+                issue.injectedVersion.setReleaseName(issue.fixVersion.getReleaseName()); //set the release name of the relative IV index
+                issue.injectedVersion.setDate(issue.fixVersion.getDate()); //set the date of the relative IV index
+
+                System.out.println("Key: " + issue.key);
+                System.out.println("predictedIV: " + predictedIV);
+                System.out.println("IV: " + issue.injectedVersion.getId());
+                System.out.println("FV: " + issue.fixVersion.getId());
+                System.out.println("OV: " + issue.openingVersion.getId());
+                System.out.println("P_increment: " + P_increment);
+            }
+           /* labelAffected(issue); //label each version after the IV and FV (exclused) as affected
+            for(Release release : issue.avList)
+            System.out.println("Affected versions: " + release.getReleaseName());*/
+            //labels the ticket as affected between the injected version and the fix version (excluded)
+
+
         }
-        return issueTicketsWithIv; //return the list of tickets with the predicted IV
+    }
 
-
+    public void labelAffected(IssueTicket issue) throws ParseException, IOException {
+        ManageRelease manageRelease = new ManageRelease();
+        List<Release> releases = manageRelease.retrieveReleases(projName);
+        for(Release release : releases){
+            if(release.getId() >= issue.injectedVersion.getId() && release.getId() < issue.fixVersion.getId())
+                issue.avList.add(release);
+        }
 
     }
 }

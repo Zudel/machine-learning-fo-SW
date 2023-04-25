@@ -23,6 +23,17 @@ public class Release {
         this.releaseName = fixVersion;
     }
 
+    public Release(String releaseName, Date date, int ovIndex) {
+        this.releaseName = releaseName;
+        this.date = date;
+        this.releaseidex = ovIndex;
+    }
+
+    public Release() {
+
+    }
+
+
     public String getReleaseName() {
         return releaseName;
     }

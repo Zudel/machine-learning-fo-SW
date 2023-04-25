@@ -11,7 +11,7 @@ public class IssueTicket {
     public Release openingVersion;
     public List<Release> avList;
 
-    public IssueTicket(String key, Release iv, Release fv, Release ov, List<Release> avList) {
+    public IssueTicket(String key, Release iv, Release fv, Release ov) {
         this.key = key;
         this.injectedVersion = iv;
         this.fixVersion = fv;

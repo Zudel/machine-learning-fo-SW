@@ -28,7 +28,6 @@ public class ManageRelease {
 
         for(int i=0; i<total; i++) {
             if(releases.getJSONObject(i).get("released").toString().equals("true")) {
-
                 try {
                     String releaseDateString = releases.getJSONObject(i).get("releaseDate").toString();
                     Date releaseDate = formatter.parse(releaseDateString);
@@ -45,6 +44,8 @@ public class ManageRelease {
 
         }
         Map<Date, String> releasesMap = new TreeMap<>(unsortedReleasesMap);        //TreeMap sorts unsortedReleasesMap by date
+        //order the map by date
+
 
         int i=1;
         for(Map.Entry<Date, String> entry : releasesMap.entrySet()) {    //Iteration over releasesMap
@@ -56,12 +57,24 @@ public class ManageRelease {
 
     }
 
-    //get index of release in releasesList given its date
-    public int getReleaseIndex(List<Release> releasesList, Date releaseDate) throws ParseException {
-        int index = 0;
-        for(Release release : releasesList) {
-            if(release.getDate().equals(releaseDate) && !release.getReleaseName().equals("N/A")) {
+
+    public int getReleaseIndexByName(List<Release> releases, String name) {
+        int index = -1;
+        for(Release release : releases) {
+            if(release.getReleaseName().equals(name)) {
                 index = release.getId();
+            }
+        }
+        return index;
+
+    }
+
+    public int getReleaseIndexByDate(List<Release> releases, Date date) throws ParseException {
+        int index = -1;
+        for (Release release : releases) {
+            //assegnare un id della lista alla release alla data più vicina a date
+            if (release.getDate().after(date)) {
+                return index = release.getId();
             }
         }
         return index;
