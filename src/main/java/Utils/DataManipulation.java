@@ -41,7 +41,7 @@ public class DataManipulation {
         return data;
     }
 
-    public String convertDate(Date inputDate) throws ParseException {
+    public String convertDateToString(Date inputDate) throws ParseException {
         SimpleDateFormat inputFormat = new SimpleDateFormat("EE MMM dd HH:mm:ss z yyyy", Locale.ENGLISH);
         Date date = inputFormat.parse(inputDate.toString());
 

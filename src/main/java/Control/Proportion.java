@@ -73,10 +73,6 @@ public class Proportion {
     public void computePredictedIVWithColdstart(IssueTicket issue, List<Release> releases) throws ParseException, IOException {
         double P_ColdStart = proportionColdstart(); //compute the P_ColdStart value
         int predictedIV;
-        //stampa tutte le release
-        for (Release release : releases) {
-            System.out.println("Release: " + release.getReleaseName() + " id: " + release.getId() + " date: " + release.getDate());
-        }
         System.out.println("P_ColdStart: " + P_ColdStart);
             if(issue.injectedVersion.getReleaseName().equals("N/A") && issue.fixVersion.getId() != 0){
                 if(issue.fixVersion.getId() - issue.openingVersion.getId() == 0)
@@ -130,17 +126,14 @@ public class Proportion {
                 issue.injectedVersion.setReleaseName(issue.fixVersion.getReleaseName()); //set the release name of the relative IV index
                 issue.injectedVersion.setDate(issue.fixVersion.getDate()); //set the date of the relative IV index
 
-                System.out.println("Key: " + issue.key);
+               /* System.out.println("Key: " + issue.key);
                 System.out.println("predictedIV: " + predictedIV);
                 System.out.println("IV: " + issue.injectedVersion.getId());
                 System.out.println("FV: " + issue.fixVersion.getId());
                 System.out.println("OV: " + issue.openingVersion.getId());
-                System.out.println("P_increment: " + P_increment);
+                System.out.println("P_increment: " + P_increment);*/
             }
-           /* labelAffected(issue); //label each version after the IV and FV (exclused) as affected
-            for(Release release : issue.avList)
-            System.out.println("Affected versions: " + release.getReleaseName());*/
-            //labels the ticket as affected between the injected version and the fix version (excluded)
+            labelAffected(issue); //label each version after the IV and FV (exclused) as affected
 
 
         }
@@ -149,6 +142,7 @@ public class Proportion {
     public void labelAffected(IssueTicket issue) throws ParseException, IOException {
         ManageRelease manageRelease = new ManageRelease();
         List<Release> releases = manageRelease.retrieveReleases(projName);
+        issue.avList = new ArrayList<>();
         for(Release release : releases){
             if(release.getId() >= issue.injectedVersion.getId() && release.getId() < issue.fixVersion.getId())
                 issue.avList.add(release);

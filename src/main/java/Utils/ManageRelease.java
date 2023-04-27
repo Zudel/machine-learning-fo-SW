@@ -73,10 +73,19 @@ public class ManageRelease {
         int index = -1;
         for (Release release : releases) {
             //assegnare un id della lista alla release alla data più vicina a date
-            if (release.getDate().after(date)) {
+            if (release.getDate().after(date) || release.getDate().equals(date)) {
                 return index = release.getId();
             }
         }
         return index;
+    }
+
+    public List<Release> getHalfRelease(List<Release> releases) {
+        List<Release> halfReleases = new ArrayList<>();
+        int half = releases.size() / 2;
+        for (int i = 0; i < half; i++) {
+            halfReleases.add(releases.get(i));
+        }
+        return halfReleases;
     }
 }

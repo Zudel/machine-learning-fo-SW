@@ -104,10 +104,12 @@ public class RetrieveJiraTickets {
                                    ivIndex = mr.getReleaseIndexByDate(releases, iv.getDate());
                                    iv.setId(ivIndex);
                                }
-                               if (ov.getId() < fv.getId()){
+                               if(ov.getId() == -1)
+                                   ov.setId(fvIndex);
+                               if (ov.getId() <= fv.getId() && iv.getId() < fv.getId() && (injectedVersion.equals(fixVersion) == false)){
                                     ticket = new IssueTicket(key, iv, fv, ov);
-                                    System.out.println("Ticket: " + ticket.getKey() + " - " + injectedVersion + " - " + ov.getReleaseName() + " - " + fixVersion);
-                                    System.out.println("Ticket: " + ticket.getKey() + " - " + iv.getId() + " - " + ov.getId() + " - " + fv.getId());
+                                    /*System.out.println("Ticket: " + ticket.getKey() + " - " + injectedVersion + " - " + ov.getReleaseName() + " - " + fixVersion);
+                                    System.out.println("Ticket: " + ticket.getKey() + " - " + iv.getId() + " - " + ov.getId() + " - " + fv.getId());*/
                                    tickets.add(ticket); //aggiungo il ticket alla lista dei ticket
                                }
                            }
