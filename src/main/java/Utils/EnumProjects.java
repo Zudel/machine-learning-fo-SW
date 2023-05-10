@@ -2,6 +2,10 @@ package Utils;
 
 public enum EnumProjects {
 
-    AVRO
+    FALCON,
+    IVY,
+    OPENJPA,
+    STORM,
+    TAJO
 
 }

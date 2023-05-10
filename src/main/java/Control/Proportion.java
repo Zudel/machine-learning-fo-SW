@@ -100,12 +100,12 @@ public class Proportion {
      (iv) For each defect, we label each version before the IV as not affected.We label each
      version from the IV to the FV as affected. The FV is labeled not affected.
      */
-    public void proportionIncremental(List<IssueTicket> allIssueTickets, List<IssueTicket> issueTicketsWithIV) throws ParseException, IOException {
+    public List<IssueTicket> proportionIncremental(List<IssueTicket> allIssueTickets, List<IssueTicket> issueTicketsWithIV) throws ParseException, IOException {
         double P_increment;
         double P_ColdStart = proportionColdstart(); //compute the P_ColdStart value
         int predictedIV;
         int countWithIV;
-
+        List<IssueTicket> predictedIssueTickets = new ArrayList<>();
 
 
         System.out.println("P_ColdStart: " + P_ColdStart);
@@ -121,7 +121,8 @@ public class Proportion {
                 P_increment = computeProportion(issueTicketsWithIV);
             if(issue.injectedVersion.getReleaseName().equals("N/A")) {
                 predictedIV = (int) floor((issue.fixVersion.getId() - issue.openingVersion.getId()) * P_increment); //compute the IV for each ticket in the list and take the floor value
-
+                if(predictedIV == 0)
+                    predictedIV = 1;
                 issue.injectedVersion.setId(predictedIV); //compute the IV for each ticket in the list and take the floor value
                 issue.injectedVersion.setReleaseName(issue.fixVersion.getReleaseName()); //set the release name of the relative IV index
                 issue.injectedVersion.setDate(issue.fixVersion.getDate()); //set the date of the relative IV index
@@ -134,9 +135,14 @@ public class Proportion {
                 System.out.println("P_increment: " + P_increment);*/
             }
             labelAffected(issue); //label each version after the IV and FV (exclused) as affected
+            if(!(issue.injectedVersion.getId() == issue.fixVersion.getId())){
+                //scartalo dalla lista allIssueTickets
+                predictedIssueTickets.add(issue);
+            }
 
 
         }
+        return predictedIssueTickets;
     }
 
     public void labelAffected(IssueTicket issue) throws ParseException, IOException {

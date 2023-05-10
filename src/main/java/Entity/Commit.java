@@ -74,5 +74,8 @@ public class Commit {
         }
 
 
+    public void addFileTouched(FileTouched fileTouched) {
+        this.changedFileToucheds.add(fileTouched);
+    }
 }
 
