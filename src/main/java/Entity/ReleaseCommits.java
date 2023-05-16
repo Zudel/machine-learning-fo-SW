@@ -1,9 +1,7 @@
-package Utils;
+package Entity;
 
 import java.util.List;
 import java.util.Map;
-
-import Entity.Release;
 import org.eclipse.jgit.revwalk.RevCommit;
 
 public class ReleaseCommits {

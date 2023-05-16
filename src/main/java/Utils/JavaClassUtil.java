@@ -5,6 +5,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 
+import Entity.ReleaseCommits;
 import Entity.FileTouched;
 import Entity.Release;
 import org.eclipse.jgit.revwalk.RevCommit;
@@ -36,7 +37,6 @@ public class JavaClassUtil {
      * doLabeling (RetrieveGitInfo)*/
     public static void updateJavaClassBuggyness(List<FileTouched> javaClasses, String className, Release iv, Release fv) {
         //fv is related to the single commit, not to the ticket
-
         for(FileTouched javaClass : javaClasses) {
             //if javaClass has been modified by commit (that is className) and is related to a version v such that iv <= v < fv, then javaClass is buggy
             if(javaClass.getPathname().equals(className) && javaClass.getReleaseIndex() >= iv.getId() && javaClass.getReleaseIndex()< fv.getId()) {

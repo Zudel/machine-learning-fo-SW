@@ -7,14 +7,14 @@ import java.util.*;
 public class Release {
     public String releaseName;
     public int releaseidex;
+
     public Date date;
-    List<FileTouched> buggyFiles;
     List<FileTouched> files;
 
     public Release(String releaseName, Date date) {
         this.releaseName = releaseName;
         this.date = date;
-        this.buggyFiles = new ArrayList<>();
+
         this.files = new ArrayList<>();
         this.releaseidex = 0;
 
@@ -24,7 +24,7 @@ public class Release {
         this.releaseidex = id;
         this.releaseName = name;
         this.date = date;
-        this.buggyFiles = new ArrayList<>();
+
         this.files = new ArrayList<>();
     }
 
@@ -60,13 +60,7 @@ public class Release {
         this.date = date;
     }
 
-    public List<FileTouched> getBuggyFiles() {
-        return buggyFiles;
-    }
 
-    public void setBuggyFiles(List<FileTouched> buggyFiles) {
-        this.buggyFiles = buggyFiles;
-    }
 
     public List<FileTouched> getFiles() {
         return files;
@@ -80,9 +74,6 @@ public class Release {
         this.files.add(file);
     }
 
-    public void addBuggyFile(FileTouched file){
-        this.buggyFiles.add(file);
-    }
 
 
 

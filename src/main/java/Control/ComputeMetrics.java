@@ -125,9 +125,10 @@ public class ComputeMetrics {
 
     }
 
-    public int calculateComplexity(String path, String content) throws IOException {
+    public int calculateComplexity(String path, String content) {
 
         String filePath = path;
+        System.out.println("File: " + filePath);
         complexity = 1;
         if (filePath.endsWith(".java") || !filePath.contains("test")) {
 
@@ -222,37 +223,34 @@ public class ComputeMetrics {
 
     public List<FileTouched> doAllMetricsComputation() throws IOException {
         //When possible, the following metrics are applied just on one single release (i.e. the release as attribute of JavaClass element)
-
-        computeSize();	//Size = lines of code (LOC) in the class
-        computeNR();	//NR = number of commits that have modified the class
-        computeNAuth();	//NAuth = number of authors of the class
+        computeSize();    //Size = lines of code (LOC) in the class
+        computeNR();    //NR = number of commits that have modified the class
+        computeNAuth();    //NAuth = number of authors of the class
         computeLocAndChurn();
-        for (FileTouched javaClass : this.javaClassesList)
-            computeCcAndComment(javaClass, javaClass.getContent());
+        for (FileTouched javaClass : javaClassesList) {
+            computeCcAndComment(javaClass);
+        }
         /* LocAdded = sum of number of added LOC in all the commit of the given release
          * MaxLocAdded = max number of added LOC in all the commit of the given release
          * AvgLocAdded = average number of added LOC in all the commit of the given release
          * Churn = sum of |number of added LOC - number of deleted LOC| in all the commit of the given release
          * MaxChurn = max |number of added LOC - number of deleted LOC| in all the commit of the given release
-         * Churn = average of |number of added LOC - number of deleted LOC| in all the commit of the given release */
-
-        return this.javaClassesList;
-
+         * Churn = average of |number of added LOC - number of deleted LOC| in all the commit of the given release
+         * Cc = cyclomatic complexity of the class
+         * Comment = number of comment lines in the class
+         * */
+        return javaClassesList;
     }
 
-    private void computeCcAndComment(FileTouched javaClass, String content) throws IOException {
+    private void computeCcAndComment(FileTouched javaClass) throws IOException {
 
-
-        for (RevCommit commit :javaClass.getCommits()) {
-            DiffFormatter diffFormatter = new DiffFormatter(DisabledOutputStream.INSTANCE);
+            /*DiffFormatter diffFormatter = new DiffFormatter(DisabledOutputStream.INSTANCE);
             diffFormatter.setRepository(git.getRepository());
             diffFormatter.setDiffComparator(RawTextComparator.DEFAULT); // imposta il comparatore di diff di default (per file di testo)
             diffFormatter.setDetectRenames(true); // imposta il rilevamento dei file rinominati a true (per ottenere le diff dei file rinominati)
-
             if (commit.getParentCount() == 0) { // se il commit non ha parent, continua con il prossimo commit
                 continue;
             }
-
             RevCommit parent = commit.getParent(0); // ottieni il primo parent del commit corrente
             List<DiffEntry> diffs = diffFormatter.scan(parent, commit); // ottieni le differenze tra il commit corrente e il suo parent
             for (DiffEntry diff : diffs) { // per ogni differenza
@@ -262,15 +260,8 @@ public class ComputeMetrics {
                 if (diff.getChangeType() == DiffEntry.ChangeType.RENAME)
                     continue;
                 if (!diff.getNewPath().endsWith(".java") || diff.getNewPath().contains("test"))  //il file deve terminere con la dicitura .java
-                    continue;
-                File file = new File(diff.getNewPath());
-                if (!file.exists()) {
-                    continue;
-                }
-                javaClass.setCc(calculateComplexity(diff.getNewPath(), content));
-                javaClass.setLocm(calculateComment(diff.getNewPath(), content));
+                    continue;*/
+                javaClass.setCc(calculateComplexity(javaClass.getPathname(), javaClass.getContent()));
+                javaClass.setLocm(calculateComment(javaClass.getPathname(), javaClass.getContent()));
             }
-
-        }
-    }
 }

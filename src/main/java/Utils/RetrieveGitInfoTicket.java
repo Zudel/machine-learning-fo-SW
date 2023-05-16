@@ -1,7 +1,7 @@
 package Utils;
 
 import Control.Metrics;
-import Entity.Commit;
+import Entity.ReleaseCommits;
 import Entity.FileTouched;
 import Entity.IssueTicket;
 import Entity.Release;
@@ -33,13 +33,13 @@ public class RetrieveGitInfoTicket {
     private static final String JIRA_REGEX = "\\b(BOOKKEEPER-[0-9]+)\\b"; // Regex per trovare le key di JIRA
     private static final Pattern JIRA_PATTERN = Pattern.compile(JIRA_REGEX);
     private String localPath = "C:\\Users\\Roberto\\Documents\\GitHub\\bookkeeper";
-    private Repository repo = Git.open(new File(localPath + "/.git")).getRepository();
+    private Git git;
+    private Repository repo;
 
-    private Git git = new Git(repo);
-
-    public RetrieveGitInfoTicket() throws IOException {
+    public RetrieveGitInfoTicket(Repository repo, Git git) {
+        this.repo = repo;
+        this.git = git;
     }
-
     public void JiraKeywordsExtractor () throws IOException { //metodo per estrarre le key di JIRA dai commit message
         // Set the path to the local Git repository
 
@@ -70,7 +70,6 @@ public class RetrieveGitInfoTicket {
             }
         }
 
-        // Close the Git object and the repository
         git.close();
         repo.close();
     }
@@ -177,7 +176,7 @@ public class RetrieveGitInfoTicket {
                 List<DiffEntry> diffs = diffFormatter.scan(parentComm.getTree(), comm.getTree());
                 for(DiffEntry entry : diffs) {
                     if(entry.getNewPath().equals(javaClass.getPathname())) {
-                        javaClass.getAddedLinesList().add(getAddedLines(diffFormatter, entry));
+                        javaClass.getAddedLinesList().add(getAddedLines(diffFormatter, entry)); //add the number of added lines to the list of added lines of the java class
                         javaClass.getDeletedLinesList().add(getDeletedLines(diffFormatter, entry));
 
                     }
@@ -191,13 +190,11 @@ public class RetrieveGitInfoTicket {
 
         }
 
-
     }
 
-
-    public List<RevCommit> retrieveAllCommits(Git git) throws IOException, GitAPIException {
+    public  List<RevCommit> retrieveAllCommits(Git git) throws IOException, GitAPIException {
         List<RevCommit> allCommitsList = new ArrayList<>();
-        List<Ref> branchesList = git.branchList().setListMode(ListBranchCommand.ListMode.ALL).call();
+        List<Ref> branchesList = git.branchList().setListMode(ListBranchCommand.ListMode.ALL).call(); //get all branches of the repo
 
         //Branches loop
         for(Ref branch : branchesList) {
@@ -213,7 +210,6 @@ public class RetrieveGitInfoTicket {
         }
         return allCommitsList;
     }
-
     public List<ReleaseCommits> getRelCommAssociations(List<RevCommit> allCommitsList, List<Release> releases) throws ParseException {
         List<ReleaseCommits> relCommAssociations = new ArrayList<>();
 
@@ -223,6 +219,8 @@ public class RetrieveGitInfoTicket {
         for(Release rel : releases) {
             relCommAssociations.add(ReleaseCommitsUtil.getCommitsOfRelease(allCommitsList, rel, firstDate));
             firstDate = rel.getDate();
+            System.out.println("Release: " + rel.getId() + " - " + rel.getDate());
+
 
         }
         return relCommAssociations;
@@ -232,19 +230,23 @@ public class RetrieveGitInfoTicket {
      * on release date, and then sets these classes as attribute of the instance*/
     public void getRelClassesAssociations(List<ReleaseCommits> relCommAssociations) throws IOException {
 
-        for(ReleaseCommits relComm : relCommAssociations) {
+        for(ReleaseCommits relComm : relCommAssociations) { //For each release we get the classes that were present in the repository on release date
             Map<String, String> javaClasses = getClasses(relComm.getLastCommit());
-            relComm.setJavaClasses(javaClasses);
+            relComm.setJavaClasses(javaClasses); //We set these classes as attribute of the instance of ReleaseCommits
 
         }
 
     }
-    private Map<String, String> getClasses(RevCommit commit) throws IOException {
+    private Map<String, String> getClasses(RevCommit lastCommit) throws IOException {
 
         Map<String, String> javaClasses = new HashMap<>();
-
-        RevTree tree = commit.getTree();	//We get the tree of the files and the directories that were belonging to the repository when commit was pushed
-        TreeWalk treeWalk = new TreeWalk(this.repo);	//We use a TreeWalk to iterate over all files in the Tree recursively
+        RevTree tree;
+        try {
+            tree = lastCommit.getTree();    //We get the tree of the files and the directories that were belonging to the repository when commit was pushed
+        } catch(NullPointerException e) {
+            return javaClasses; //If the commit has no parent, we return an empty map
+        }
+            TreeWalk treeWalk = new TreeWalk(this.repo);	//We use a TreeWalk to iterate over all files in the Tree recursively
         treeWalk.addTree(tree);
         treeWalk.setRecursive(true);
 
@@ -267,7 +269,7 @@ public class RetrieveGitInfoTicket {
      * 	 through the updateJavaClassBuggyness function*/
     private void doLabeling(List<FileTouched> javaClasses, IssueTicket ticket, List<ReleaseCommits> relCommAssociations) throws GitAPIException, IOException {
 
-        List<RevCommit> commitsAssociatedWIssue = getTicketCommits(ticket);
+        List<RevCommit> commitsAssociatedWIssue = getTicketCommits(ticket); //commits associated with the ticket (we looking for commits that contain the ticket ID in the commit message)
 
         for(RevCommit commit : commitsAssociatedWIssue) {
             Release associatedRelease = ReleaseCommitsUtil.getReleaseOfCommit(commit, relCommAssociations);
@@ -313,7 +315,6 @@ public class RetrieveGitInfoTicket {
         for(RevCommit commit : commits) {
             Release associatedRelease = ReleaseCommitsUtil.getReleaseOfCommit(commit, relCommAssociations);
             if(associatedRelease != null) {		//There are also commits with no associatedRelease because their date is latter than last release date
-                System.out.println("Commit: " + commit.getName() + " Release: " + associatedRelease.getId());
                 List<String> modifiedClasses = getModifiedClasses(commit);
                 for(String modifClass : modifiedClasses) {
                     JavaClassUtil.updateJavaClassCommits(javaClasses, modifClass, associatedRelease, commit);
@@ -368,7 +369,7 @@ public class RetrieveGitInfoTicket {
         //Here there will be the commits involving the affected versions of ticket
         //Commits have a ticket ID included in their comment (full message)
         List<RevCommit> associatedCommits = new ArrayList<>();
-        List<Ref> branchesList = git.branchList().setListMode(ListBranchCommand.ListMode.ALL).call();
+        List<Ref> branchesList = git.branchList().setListMode(ListBranchCommand.ListMode.ALL).call(); //We are retrieving all the branches of the project
 
         //Branches loop
         for(Ref branch : branchesList) {

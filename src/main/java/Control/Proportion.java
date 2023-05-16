@@ -17,8 +17,8 @@ public class Proportion {
     private static int  THRESHOLDCOLDSTART = 5;
     private double MedianProportionValue;
 
-    public Double computeProportion(List<IssueTicket> issues) throws IOException, ParseException {
-        double propValue = 0.0;
+    public Double computeProportion(List<IssueTicket> issues){
+        double propValue;
         List<Double> proportions = new ArrayList<>(); //List of proportion values.
         for (IssueTicket issue : issues) {
             //P = (FV-IV)/(FV-OV)

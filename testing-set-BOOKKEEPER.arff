@@ -1,0 +1,14 @@
+@relation testing-set-BOOKKEEPER
+@attribute LOC
+@attribute NR 
+@attribute NAuth 
+@attribute CC
+@attribute NComm
+@attribute LOC_Added 
+@attribute MAX_LOC_Added
+@attribute  AVG_LOC_Added
+@attribute Churn 
+@attribute MAX_Churn
+@attribute AVG_Churn 
+@attribute Buggy {'true', 'false'}
+@data

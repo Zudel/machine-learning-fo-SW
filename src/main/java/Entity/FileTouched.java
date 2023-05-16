@@ -278,8 +278,7 @@ public class FileTouched {
     }
 
 
-
-
-
-
+    public int getChurn() {
+        return churn;
+    }
 }

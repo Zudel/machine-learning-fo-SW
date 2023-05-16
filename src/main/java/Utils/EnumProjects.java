@@ -1,11 +1,9 @@
 package Utils;
 
 public enum EnumProjects {
-
-    FALCON,
-    IVY,
+    FALCON
+    /*IVY,
     OPENJPA,
     STORM,
-    TAJO
-
+    TAJO*/
 }

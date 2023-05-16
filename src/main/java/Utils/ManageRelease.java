@@ -13,7 +13,7 @@ import java.util.*;
 import static Utils.JSONUtils.readJsonFromUrl;
 
 public class ManageRelease {
-    public List<Release> retrieveReleases(String projName) throws JSONException, IOException, ParseException {
+    public static List<Release> retrieveReleases(String projName) throws JSONException, IOException, ParseException {
 
         //The HashMap is a support to instantiate Release objects
         Map<Date, String> unsortedReleasesMap = new HashMap<>();    //Date = release date; String = release name (e.g. 1.4.2)
@@ -69,7 +69,7 @@ public class ManageRelease {
 
     }
 
-    public int getReleaseIndexByDate(List<Release> releases, Date date) throws ParseException {
+    public  int getReleaseIndexByDate(List<Release> releases, Date date) throws ParseException {
         int index = -1;
         for (Release release : releases) {
             //assegnare un id della lista alla release alla data più vicina a date
@@ -80,7 +80,7 @@ public class ManageRelease {
         return index;
     }
 
-    public List<Release> getHalfRelease(List<Release> releases) {
+    public static List<Release> getHalfRelease(List<Release> releases) {
         List<Release> halfReleases = new ArrayList<>();
         int half = releases.size() / 2;
         for (int i = 0; i < half; i++) {

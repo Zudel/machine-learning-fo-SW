@@ -5,6 +5,7 @@ import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 
+import Entity.ReleaseCommits;
 import Entity.Release;
 import org.eclipse.jgit.revwalk.RevCommit;
 
@@ -15,10 +16,11 @@ public class ReleaseCommitsUtil {
         throw new IllegalStateException("This class does not have to be instantiated.");
     }
 
-    private static RevCommit getLastCommit(List<RevCommit> commitsList) {
+    public static RevCommit getLastCommit(List<RevCommit> commitsList) {
+        RevCommit lastCommit;
 
-        RevCommit lastCommit = commitsList.get(0);
-        for(RevCommit commit : commitsList) {
+            lastCommit = commitsList.get(0); //initialize lastCommit with the first commit of the list
+            for(RevCommit commit : commitsList) {
             //if commitDate > lastCommitDate then refresh lastCommit
             if(commit.getCommitterIdent().getWhen().after(lastCommit.getCommitterIdent().getWhen())) {
                 lastCommit = commit;
@@ -38,19 +40,18 @@ public class ReleaseCommitsUtil {
         List<RevCommit> matchingCommits = new ArrayList<>();
         Date lastDate = release.getDate();
 
-        for(RevCommit commit : commitsList) {
-            Date commitDate = commit.getCommitterIdent().getWhen();
+        for(RevCommit commit : commitsList) { //for each commit in commitsList (that is all the commits of the project) do
+            Date commitDate = commit.getCommitterIdent().getWhen(); //get commitDate
 
             //if firstDate < commitDate <= lastDate then add the commit in matchingCommits list
             if(commitDate.after(firstDate) && (commitDate.before(lastDate) || commitDate.equals(lastDate))) {
-                matchingCommits.add(commit);
-
+                matchingCommits.add(commit); //add commit to matchingCommits list (that is the list of commits of the release)
+                System.out.println("Commit " + commit.getId().getName() + " added to release " + release.getReleaseName() + " with date " + commitDate);
             }
 
         }
-        RevCommit lastCommit = getLastCommit(matchingCommits);
-
-        return new ReleaseCommits(release, matchingCommits, lastCommit);
+        RevCommit lastCommit = getLastCommit(matchingCommits); //get the last commit of the release
+        return new ReleaseCommits(release, matchingCommits, lastCommit); //return a ReleaseCommits object
 
     }
 
