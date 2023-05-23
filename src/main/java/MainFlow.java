@@ -1,17 +1,16 @@
-import Entity.FileTouched;
-import Entity.Release;
-import Flows.MetricsAndBugginessFlow;
-import Flows.ProportionFlow;
-import Flows.WekaFlow;
-import Utils.*;
+import entity.FileTouched;
+import entity.Release;
+import flows.MetricsAndBugginessFlow;
+import flows.ProportionFlow;
+import flows.WekaFlow;
+import utils.*;
 import org.eclipse.jgit.api.Git;
 import org.eclipse.jgit.lib.Repository;
 import java.io.File;
 import java.util.List;
 
-import static Utils.CsvUtils.CsvReader.leggiCsv;
-import static Utils.ManageRelease.getHalfRelease;
-import static Utils.ManageRelease.retrieveReleases;
+import static utils.ManageRelease.getHalfRelease;
+import static utils.ManageRelease.retrieveReleases;
 
 public class MainFlow {
     public static void main(String[] args) throws Exception {
