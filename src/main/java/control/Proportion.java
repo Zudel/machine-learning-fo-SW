@@ -15,7 +15,6 @@ import static java.lang.Math.*;
 public class Proportion {
     private String projName = "BOOKKEEPER";
     private static int  thresholdClodStart = 5;
-    private double medianProportionValue;
 
     public Double computeProportion(List<IssueTicket> issues){
         double propValue;
@@ -56,10 +55,10 @@ public class Proportion {
         //compute the median of the proportion values of all the projects
 
         if (enumMap.size() % 2 == 0) {
-             return medianProportionValue = (enumMap.get(EnumProjects.values()[enumMap.size() / 2]) + enumMap.get(EnumProjects.values()[enumMap.size() / 2 - 1])) / 2;
+             return (enumMap.get(EnumProjects.values()[enumMap.size() / 2]) + enumMap.get(EnumProjects.values()[enumMap.size() / 2 - 1])) / 2;
         }
         else {
-            return medianProportionValue = enumMap.get(EnumProjects.values()[enumMap.size() / 2]);
+            return enumMap.get(EnumProjects.values()[enumMap.size() / 2]);
         }
 
 
@@ -78,11 +77,11 @@ public class Proportion {
                 if(issue.getFixVersion().getId() - issue.getOpeningVersion().getId() == 0)
                     predictedIV= 1;
                 else
-                    predictedIV = (int) floor((issue.getFixVersion().getId() - issue.getOpeningVersion().getId()) * pColdStart); //compute the IV for each ticket in the list and take the floor value
+                    predictedIV = (int) floor((issue.getFixVersion().getId() - issue.getOpeningVersion().getId()) * pColdStart);
 
-                issue.getInjectedVersion().setId(predictedIV); //compute the IV for each ticket in the list and take the floor value
-                issue.getInjectedVersion().setReleaseName(releases.get(predictedIV).getReleaseName()); //set the release name of the relative IV index               issue.injectedVersion.setDate(issue.injectedVersion.getDate());
-                issue.getInjectedVersion().setDate(releases.get(predictedIV).getDate()); //set the date of the relative IV index
+                issue.getInjectedVersion().setId(predictedIV);
+                issue.getInjectedVersion().setReleaseName(releases.get(predictedIV).getReleaseName());
+                issue.getInjectedVersion().setDate(releases.get(predictedIV).getDate());
 
             }
 

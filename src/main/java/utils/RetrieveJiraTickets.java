@@ -109,7 +109,7 @@ public class RetrieveJiraTickets {
         return tickets;
     }
 
-    private Release getRelease(List<Release> releases, Date Date) throws ParseException {
+    private Release getRelease(List<Release> releases, Date Date) {
         for (Release release : releases) {
             if (release.getDate().after(Date)) {
                 return release;
@@ -119,7 +119,7 @@ public class RetrieveJiraTickets {
     }
     //retrieve only consistent tickets
 
-    public List<IssueTicket> retrieveConsistentTickets(List<IssueTicket> allTickets) throws IOException, ParseException {
+    public List<IssueTicket> retrieveConsistentTickets(List<IssueTicket> allTickets) {
                 List<IssueTicket> consistentTickets = new ArrayList<>();
 
                 for (IssueTicket ticket : allTickets) {
