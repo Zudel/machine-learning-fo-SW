@@ -5,11 +5,11 @@ import java.text.ParseException;
 import java.util.*;
 
 public class Release {
-    public String releaseName;
-    public int releaseidex;
+    private String releaseName;
+    private int releaseidex;
 
-    public Date date;
-    List<FileTouched> files;
+    private Date date;
+    private List<FileTouched> files;
 
     public Release(String releaseName, Date date) {
         this.releaseName = releaseName;
@@ -48,7 +48,7 @@ public class Release {
     }
 
 
-    public Date getDate() throws ParseException {
+    public Date getDate()  {
         return date;
     }
 

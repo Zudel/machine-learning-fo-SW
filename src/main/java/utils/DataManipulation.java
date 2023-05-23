@@ -8,7 +8,7 @@ public class DataManipulation {
        SimpleDateFormat formatoData;
        private Date data;
 
-       public String DataManipulationFormat(String summary) throws ParseException {
+       public String dataManipulationFormat(String summary) throws ParseException {
         if(summary.contains("T")) {
             formatoData = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss.SSSZ");
         }
@@ -23,9 +23,7 @@ public class DataManipulation {
         // Definizione del formato di output desiderato
         SimpleDateFormat formatoOutput = new SimpleDateFormat("dd/MM/yyyy");
 
-        // Formattazione della data in una stringa
-        String dataFormattata = formatoOutput.format(data);
-        return dataFormattata;
+        return formatoOutput.format(data);
     }
     //convert la data in formato stringa del tipo "dd/MM/yyyy" in un oggetto di tipo Date
     public Date convertStringToDate(String dataString) throws ParseException {

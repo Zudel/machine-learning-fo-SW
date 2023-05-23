@@ -9,6 +9,10 @@ import java.net.URL;
 import java.nio.charset.Charset;
 
 public class JSONUtils {
+
+    private JSONUtils() {
+        throw new IllegalStateException("Utility class");
+    }
     private static String readAll(Reader rd) throws IOException {
         StringBuilder sb = new StringBuilder();
         int cp;
@@ -23,8 +27,7 @@ public class JSONUtils {
         try {
             BufferedReader rd = new BufferedReader(new InputStreamReader(is, Charset.forName("UTF-8")));
             String jsonText = readAll(rd);
-            JSONArray json = new JSONArray(jsonText);
-            return json;
+            return new JSONArray(jsonText);
         } finally {
             is.close();
         }

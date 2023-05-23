@@ -1,3 +1,5 @@
+package flows;
+
 import entity.FileTouched;
 import entity.Release;
 import flows.MetricsAndBugginessFlow;

@@ -10,7 +10,7 @@ public class FileTouched {
     private int releaseIndex;
     private int nRev;
     private int nAuth;
-    private int loc_Touched;
+    private int locTouched;
     private int cc;
     private int locm;
     private List<RevCommit> commits;
@@ -215,12 +215,12 @@ public class FileTouched {
             this.nAuth = nAuth;
         }
 
-        public int getLoc_Touched() {
-            return loc_Touched;
+        public int getLocTouched() {
+            return locTouched;
         }
 
-        public void setLoc_Touched(int loc_Touched) {
-            this.loc_Touched = loc_Touched;
+        public void setLocTouched(int locTouched) {
+            this.locTouched = locTouched;
         }
 
         public int getCc() {

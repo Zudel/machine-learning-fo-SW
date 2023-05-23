@@ -1,7 +1,8 @@
 package utils;
 
 public class RetrieveProject {
-        private String project, projectDir;
+        private String project ;
+        private String projectDir;
         public String getProjName() {
             return project;
         }

@@ -5,11 +5,11 @@ import java.util.Date;
 import java.util.List;
 
 public class IssueTicket {
-    public String key;
-    public Release injectedVersion;
-    public Release fixVersion;
-    public Release openingVersion;
-    public List<Release> avList;
+    private String key;
+    private Release injectedVersion;
+    private Release fixVersion;
+    private Release openingVersion;
+    private List<Release> avList;
 
     public IssueTicket(String key, Release iv, Release fv, Release ov) {
         this.key = key;

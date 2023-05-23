@@ -58,7 +58,7 @@ public class RetrieveJiraTickets {
                if (!listAV.isEmpty() && issues.getJSONObject(i % 1000).getJSONObject("fields").getJSONArray("versions").getJSONObject(0).has("releaseDate") && issues.getJSONObject(i % 1000).getJSONObject("fields").getJSONArray("versions").getJSONObject(0).has("name")) { //se la lista non è vuota
                    injectedVersion = issues.getJSONObject(i % 1000).getJSONObject("fields").getJSONArray("versions").getJSONObject(0).get("name").toString();
                    injectedVersionDate = issues.getJSONObject(i % 1000).getJSONObject("fields").getJSONArray("versions").getJSONObject(0).get("releaseDate").toString();
-                   dataFormattata2Injected = new DataManipulation().DataManipulationFormat(injectedVersionDate);
+                   dataFormattata2Injected = new DataManipulation().dataManipulationFormat(injectedVersionDate);
                }
                if (listAV.isEmpty())
                    injectedVersion = "N/A";
@@ -75,7 +75,7 @@ public class RetrieveJiraTickets {
                //estraggo la data di apertura del bug
 
                String openingDate = issues.getJSONObject(i % 1000).getJSONObject("fields").get("created").toString();
-               String openingVersionDateFormatted = new DataManipulation().DataManipulationFormat(openingDate);
+               String openingVersionDateFormatted = new DataManipulation().dataManipulationFormat(openingDate);
                Date ovDate = new DataManipulation().convertStringToDate(openingVersionDateFormatted);
 
                ManageRelease mr = new ManageRelease();
