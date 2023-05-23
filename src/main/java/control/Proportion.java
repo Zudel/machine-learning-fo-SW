@@ -23,7 +23,7 @@ public class Proportion {
         for (IssueTicket issue : issues) {
             //P = (FV-IV)/(FV-OV)
             double prop;
-            if (issue.fixVersion.getId() - issue.openingVersion.getId() <= 0) {
+            if (issue.getFixVersion().getId() - issue.getOpeningVersion().getId() <= 0) {
                 prop = (1.0) * (issue.getFixVersion().getId() - issue.getInjectedVersion().getId()) / (1.0); //if the denominator is 0, we set FV - OV to 1
             }
             else {
@@ -74,15 +74,15 @@ public class Proportion {
         double pColdStart = proportionColdstart(); //compute the P_ColdStart value
         int predictedIV;
 
-            if(issue.injectedVersion.getReleaseName().equals("N/A") && issue.fixVersion.getId() != 0){
-                if(issue.fixVersion.getId() - issue.openingVersion.getId() == 0)
+            if(issue.getInjectedVersion().getReleaseName().equals("N/A") && issue.getFixVersion().getId() != 0){
+                if(issue.getFixVersion().getId() - issue.getOpeningVersion().getId() == 0)
                     predictedIV= 1;
                 else
-                    predictedIV = (int) floor((issue.fixVersion.getId() - issue.openingVersion.getId()) * pColdStart); //compute the IV for each ticket in the list and take the floor value
+                    predictedIV = (int) floor((issue.getFixVersion().getId() - issue.getOpeningVersion().getId()) * pColdStart); //compute the IV for each ticket in the list and take the floor value
 
-                issue.injectedVersion.setId(predictedIV); //compute the IV for each ticket in the list and take the floor value
-                issue.injectedVersion.setReleaseName(releases.get(predictedIV).getReleaseName()); //set the release name of the relative IV index               issue.injectedVersion.setDate(issue.injectedVersion.getDate());
-                issue.injectedVersion.setDate(releases.get(predictedIV).getDate()); //set the date of the relative IV index
+                issue.getInjectedVersion().setId(predictedIV); //compute the IV for each ticket in the list and take the floor value
+                issue.getInjectedVersion().setReleaseName(releases.get(predictedIV).getReleaseName()); //set the release name of the relative IV index               issue.injectedVersion.setDate(issue.injectedVersion.getDate());
+                issue.getInjectedVersion().setDate(releases.get(predictedIV).getDate()); //set the date of the relative IV index
 
             }
 
@@ -101,7 +101,7 @@ public class Proportion {
      version from the IV to the FV as affected. The FV is labeled not affected.
      */
     public List<IssueTicket> proportionIncremental(List<IssueTicket> allIssueTickets, List<IssueTicket> issueTicketsWithIV) throws ParseException, IOException {
-        double P_increment;
+        double pIncrement;
         double pValueColdStart = proportionColdstart(); //compute the P_ColdStart value
         int predictedIV;
         int countWithIV;
@@ -110,20 +110,20 @@ public class Proportion {
         for (IssueTicket issue : allIssueTickets) {
             countWithIV = 0;
             for (IssueTicket issueWithIV : issueTicketsWithIV) { //count the number of tickets with IV in the list of all tickets (to compute the P_increment)
-                if(issue.fixVersion.getDate() != null && issue.injectedVersion.getId() != issue.fixVersion.getId() && issue.fixVersion.getDate().after(issueWithIV.fixVersion.getDate()) && issue.injectedVersion.getReleaseName().equals("N/A"))
+                if(issue.getFixVersion().getDate() != null && issue.getInjectedVersion().getId() != issue.getFixVersion().getId() && issue.getFixVersion().getDate().after(issueWithIV.getFixVersion().getDate()) && issue.getInjectedVersion().getReleaseName().equals("N/A"))
                     countWithIV++;
             }
             if(countWithIV < thresholdClodStart) //if the number of tickets with IV is less than the threshold, we use the P_ColdStart value
-                P_increment = pValueColdStart;
+                pIncrement = pValueColdStart;
             else //otherwise, we compute the P_increment value
-                P_increment = computeProportion(issueTicketsWithIV);
-            if(issue.injectedVersion.getReleaseName().equals("N/A")) {
-                predictedIV = (int) floor((issue.fixVersion.getId() - issue.openingVersion.getId()) * P_increment); //compute the IV for each ticket in the list and take the floor value
+                pIncrement = computeProportion(issueTicketsWithIV);
+            if(issue.getInjectedVersion().getReleaseName().equals("N/A")) {
+                predictedIV = (int) floor((issue.getFixVersion().getId() - issue.getOpeningVersion().getId()) * pIncrement); //compute the IV for each ticket in the list and take the floor value
                 if(predictedIV == 0)
                     predictedIV = 1;
-                issue.injectedVersion.setId(predictedIV); //compute the IV for each ticket in the list and take the floor value
-                issue.injectedVersion.setReleaseName(issue.fixVersion.getReleaseName()); //set the release name of the relative IV index
-                issue.injectedVersion.setDate(issue.fixVersion.getDate()); //set the date of the relative IV index
+                issue.getInjectedVersion().setId(predictedIV); //compute the IV for each ticket in the list and take the floor value
+                issue.getInjectedVersion().setReleaseName(issue.getFixVersion().getReleaseName()); //set the release name of the relative IV index
+                issue.getInjectedVersion().setDate(issue.getFixVersion().getDate()); //set the date of the relative IV index
 
             }
             labelAffected(issue); //label each version after the IV and FV (exclused) as affected
@@ -135,10 +135,9 @@ public class Proportion {
 
     public void labelAffected(IssueTicket issue) throws ParseException, IOException {
         List<Release> releases = retrieveReleases(projName);
-        issue.avList = new ArrayList<>();
         for(Release release : releases){
-            if(release.getId() >= issue.injectedVersion.getId() && release.getId() < issue.fixVersion.getId())
-                issue.avList.add(release);
+            if(release.getId() >= issue.getInjectedVersion().getId() && release.getId() < issue.getFixVersion().getId())
+                issue.getAvList().add(release);
         }
 
     }

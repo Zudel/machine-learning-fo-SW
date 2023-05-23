@@ -69,12 +69,12 @@ public class ManageRelease {
 
     }
 
-    public  int getReleaseIndexByDate(List<Release> releases, Date date) throws ParseException {
+    public  int getReleaseIndexByDate(List<Release> releases, Date date) {
         int index = -1;
         for (Release release : releases) {
             //assegnare un id della lista alla release alla data più vicina a date
             if (release.getDate().after(date) || release.getDate().equals(date)) {
-                return index = release.getId();
+                return release.getId();
             }
         }
         return index;

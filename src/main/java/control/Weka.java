@@ -44,6 +44,7 @@ public class Weka {
     private String trainingFilePath;
     private String testingFilePath;
     private static final Logger logger = Logger.getLogger(Weka.class.getName());
+    private static String deliverableProjectPath = "C:\\Users\\Roberto\\Documents\\GitHub\\deliverable-ISW2\\";
 
     public Weka(RetrieveProject project, List<Release> halfReleases, List<FileTouched> javaClasses, boolean featureSelection, SamplingType sampling, CostSensitivityType costSensitivity) {
         this.costSensitivity = costSensitivity;
@@ -52,7 +53,7 @@ public class Weka {
         this.project = project;
         this.halfReleases = halfReleases;
         this.javaClasses = javaClasses;
-        this.pathM1 = "C:\\Users\\Roberto\\Documents\\GitHub\\deliverable-ISW2\\"+project.getProjName()+"-results_M1.csv";
+        this.pathM1 = deliverableProjectPath+project.getProjName()+"-results_M1.csv";
     }
         public  void wekaWork() throws Exception {
             //retrieve the data from Milestone1.arff
@@ -60,7 +61,7 @@ public class Weka {
             List<String[]> results = new ArrayList<>();
             Evaluation eval;
             convertCsv2Arff(pathM1); //converte il file csv in arff e lo salva in C:\Users\Roberto\Documents\GitHub\Milestone1.arff
-            Instances data = new Instances(new FileReader("C:\\Users\\Roberto\\Documents\\GitHub\\deliverable-ISW2\\"+project.getProjName()+"-results_M1.arff"));
+            Instances data = new Instances(new FileReader(deliverableProjectPath+project.getProjName()+"-results_M1.arff"));
 
             data.setClassIndex(data.numAttributes() - 1);
             Classifier[] classifiers = new Classifier[] {
@@ -70,8 +71,8 @@ public class Weka {
             };
 
                 for (int i = 1; i <= halfReleases.size(); i++) {
-                     trainingFilePath = "C:\\Users\\Roberto\\Documents\\GitHub\\deliverable-ISW2\\"+project.getProjName()+"-trainingRelease_"+(i);
-                     testingFilePath = "C:\\Users\\Roberto\\Documents\\GitHub\\deliverable-ISW2\\"+project.getProjName()+"-testingRelease_"+(i);
+                     trainingFilePath = deliverableProjectPath+project.getProjName()+"-trainingRelease_"+(i);
+                     testingFilePath = deliverableProjectPath+project.getProjName()+"-testingRelease_"+(i);
                      List<FileTouched> classesRelabeled = relabeling(javaClasses, halfReleases.get(i-1));
                      writeCsvRelease(classesRelabeled, trainingFilePath+".csv", halfReleases.get(i-1).getId(), true);
                      writeCsvRelease(javaClasses, testingFilePath+".csv", halfReleases.get(i-1).getId(), false);
@@ -173,8 +174,6 @@ public class Weka {
                                 continue; //passa alla prossima release
                             }
 
-
-
                             result[0] = project.getProjName();
                             result[1] = String.valueOf(i-1);
                             result[2] = nameClassifier; //nome del classificatore utilizzato
@@ -193,7 +192,7 @@ public class Weka {
                 }
     }
 
-    private List<FileTouched> relabeling(List<FileTouched> javaClasses, Release release) throws ParseException {
+    private List<FileTouched> relabeling(List<FileTouched> javaClasses, Release release)  {
         List<FileTouched> list = new ArrayList<>();
         for (FileTouched javaClass : javaClasses) {
             FileTouched fileTouched = javaClass;

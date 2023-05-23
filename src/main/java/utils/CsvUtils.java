@@ -10,7 +10,7 @@ import com.opencsv.CSVWriter;
 
 
 public  class CsvUtils {
-    private static String RELEASE = "Release";
+    private static String release = "Release";
     private CsvUtils(){throw new IllegalStateException("This class does not have to be instantiated.");}
 
 
@@ -18,7 +18,7 @@ public  class CsvUtils {
         String filePath = "C:\\Users\\Roberto\\Documents\\GitHub\\deliverable-ISW2\\"+projectName+"-results_M1.csv";
         FileWriter fileWriter = new FileWriter(filePath);
         CSVWriter csvWriter = new CSVWriter(fileWriter);
-        String[] header = {RELEASE, "FileName", "LOC", "NR", "NAuth", "CC", "NComm","LocAdded", "MaxLocAdded", "AvgLocAdded","Churn", "MaxChurn", "AvgChurn", "Buggy"};
+        String[] header = {release, "FileName", "LOC", "NR", "NAuth", "CC", "NComm","LocAdded", "MaxLocAdded", "AvgLocAdded","Churn", "MaxChurn", "AvgChurn", "Buggy"};
         csvWriter.writeNext(header);
         for (FileTouched fileTouched : javaClassesList){
             //write the data to csv file line by line
@@ -41,7 +41,7 @@ public  class CsvUtils {
     public static void writeCsvRelease(List<FileTouched> fileToucheds, String path, int i, boolean training) throws IOException {
         FileWriter fileWriter = new FileWriter(path); //path of the csv file
         CSVWriter csvWriter = new CSVWriter(fileWriter);
-        String[] header = {RELEASE, "FileName", "LOC", "NR", "NAuth", "CC", "NComm","LocAdded", "MaxLocAdded", "AvgLocAdded","Churn", "MaxChurn", "AvgChurn", "Buggy{No,Yes}"};
+        String[] header = {release, "FileName", "LOC", "NR", "NAuth", "CC", "NComm","LocAdded", "MaxLocAdded", "AvgLocAdded","Churn", "MaxChurn", "AvgChurn", "Buggy{No,Yes}"};
         csvWriter.writeNext(header);
         if(!training) {
             for (FileTouched fileTouched : fileToucheds) {

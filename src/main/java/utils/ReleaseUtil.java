@@ -14,8 +14,6 @@ public class ReleaseUtil {
         throw new IllegalStateException("This class does not have to be instantiated.");
     }
 
-    /*Callers:
-     * createTicketInstance (RetrieveJiraInfo)*/
     public static Release getReleaseByName(String releaseName, List<Release> releasesList) {
 
         for(Release rel : releasesList) {
@@ -28,9 +26,7 @@ public class ReleaseUtil {
 
     }
 
-    /*Callers:
-     * createTicketInstance (RetrieveJiraInfo)*/
-    public static Release getReleaseByDate(Date date, List<Release> releasesList) throws ParseException {
+    public static Release getReleaseByDate(Date date, List<Release> releasesList)  {
 
         for(Release rel : releasesList) {
             if(rel.getDate().after(date)) {		//Assumption: releases in releasesList are ordered by date
@@ -42,11 +38,8 @@ public class ReleaseUtil {
 
     }
 
-    /*Callers:
-     * cutHalfReleases (JavaClassUtil)
-     * collectData (ExecutionFlow)
-     * getCurrentClasses (RetrieveGitInfo)*/
-    public static Release getLastRelease(List<Release> releasesList) throws ParseException {
+
+    public static Release getLastRelease(List<Release> releasesList)  {
 
         Release lastRelease = releasesList.get(0);
         for(Release release : releasesList) {
@@ -60,8 +53,7 @@ public class ReleaseUtil {
 
     }
 
-    /*Callers:
-     * collectData (ExecutionFlow)*/
+
     public static List<Release> getFirstReleases(List<Release> releasesList, int maxReleaseID) {
 
         List<Release> firstReleases = new ArrayList<>();

@@ -30,10 +30,9 @@ public class RetrieveJiraTickets {
     public List<IssueTicket> retrieveTickets(String projName) throws IOException, ParseException {
        String injectedVersion=null;
        String injectedVersionDate;
-       Integer j, i = 0, total = 1;
+       Integer j, i = 0, total;
         Date fvDate;
        List<IssueTicket> tickets = new ArrayList<>();
-       List<Release> avList;
       //Get JSON API for closed bugs w/ AV in the project
       do {
          //Only gets a max of 1000 at a time, so must do this multiple times if bugs >1000
@@ -47,7 +46,6 @@ public class RetrieveJiraTickets {
           json2 = readJsonFromUrl(url);
           JSONArray issues = json2.getJSONArray("issues"); //Get the JSONArray value associated with a issues.
           total = json2.getInt("total");
-          int t = 0;
            for (; i < total && i < j; i++) {
 
                //estraggo tutte le informazioni che mi servono dal JSON dei report e le salvo in variabili locali
@@ -125,7 +123,7 @@ public class RetrieveJiraTickets {
                 List<IssueTicket> consistentTickets = new ArrayList<>();
 
                 for (IssueTicket ticket : allTickets) {
-                    if (ticket != null && !ticket.injectedVersion.getReleaseName().equals("N/A")) {
+                    if (ticket != null && !ticket.getInjectedVersion().getReleaseName().equals("N/A")) {
                         consistentTickets.add(ticket);
                     }
                 }

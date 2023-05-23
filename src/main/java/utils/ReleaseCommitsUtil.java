@@ -33,7 +33,7 @@ public class ReleaseCommitsUtil {
     }
 
 
-    public static ReleaseCommits getCommitsOfRelease(List<RevCommit> commitsList, Release release, Date firstDate) throws ParseException {
+    public static ReleaseCommits getCommitsOfRelease(List<RevCommit> commitsList, Release release, Date firstDate) {
 
         List<RevCommit> matchingCommits = new ArrayList<>();
         Date lastDate = release.getDate();

@@ -1,6 +1,7 @@
 package entity;
 
 import java.text.ParseException;
+import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 
@@ -16,7 +17,7 @@ public class IssueTicket {
         this.injectedVersion = iv;
         this.fixVersion = fv;
         this.openingVersion = ov;
-        this.avList = avList;
+        this.avList = new ArrayList<>();
 
     }
 
@@ -62,15 +63,15 @@ public class IssueTicket {
         this.avList = avList;
     }
 
-    public Date getIvDate() throws ParseException {
+    public Date getIvDate()  {
         return injectedVersion.getDate();
     }
 
-    public Date getFxDate() throws ParseException {
+    public Date getFxDate()  {
         return fixVersion.getDate();
     }
 
-    public Date getOpDate() throws ParseException {
+    public Date getOpDate()  {
         return openingVersion.getDate();
     }
 
