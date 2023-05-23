@@ -1,6 +1,5 @@
 package Control;
 import Entity.FileTouched;
-import Entity.IssueTicket;
 import Entity.Release;
 import Utils.*;
 import org.eclipse.jgit.revwalk.RevCommit;
@@ -14,8 +13,8 @@ import weka.classifiers.lazy.IBk;
 import weka.classifiers.meta.CostSensitiveClassifier;
 import weka.classifiers.meta.FilteredClassifier;
 import weka.classifiers.trees.RandomForest;
-import weka.core.Instance;
 import weka.core.Instances;
+import weka.core.UnsupportedAttributeTypeException;
 import weka.core.converters.ConverterUtils.DataSource;
 import weka.filters.Filter;
 import weka.filters.supervised.attribute.AttributeSelection;
@@ -23,18 +22,18 @@ import weka.filters.supervised.instance.Resample;
 import weka.filters.supervised.instance.SMOTE;
 import weka.filters.supervised.instance.SpreadSubsample;
 
-import java.io.BufferedReader;
 import java.io.FileReader;
-import java.text.DecimalFormat;
+import java.text.ParseException;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 import static Utils.Csv2Arff.convertCsv2Arff;
-import static Utils.SamplingType.SMOTE;
+import static Utils.CsvUtils.writeCsvRelease;
 
 public class Weka {
-    private static String pathCsv = "C:\\Users\\Roberto\\Documents\\GitHub\\Milestone1.csv";
-    private static String pathArff = "C:\\Users\\Roberto\\Documents\\GitHub\\Milestone1.arff";
+    private String pathM1;
     private  RetrieveProject project;
     private  List<Release> halfReleases;
     private  List<FileTouched> javaClasses;
@@ -42,6 +41,10 @@ public class Weka {
     private boolean featureSelection;
     private SamplingType sampling;
     private CostSensitivityType costSensitivity;
+    private String trainingFilePath;
+    private String testingFilePath;
+    private static final Logger logger = Logger.getLogger(Weka.class.getName());
+
     public Weka(RetrieveProject project, List<Release> halfReleases, List<FileTouched> javaClasses, boolean featureSelection, SamplingType sampling, CostSensitivityType costSensitivity) {
         this.costSensitivity = costSensitivity;
         this.sampling = sampling;
@@ -49,67 +52,65 @@ public class Weka {
         this.project = project;
         this.halfReleases = halfReleases;
         this.javaClasses = javaClasses;
-
-
-
+        this.pathM1 = "C:\\Users\\Roberto\\Documents\\GitHub\\deliverable-ISW2\\"+project.getProjName()+"-results_M1.csv";
     }
         public  void wekaWork() throws Exception {
             //retrieve the data from Milestone1.arff
             // Carica i dati dal file ARFF
-            String trainingFile = "training-set-"+project.getProjName();
-            String testingFile = "testing-set-"+project.getProjName();
             List<String[]> results = new ArrayList<>();
-            convertCsv2Arff(); //converte il file csv in arff e lo salva in C:\Users\Roberto\Documents\GitHub\Milestone1.arff
-            Instances data = new Instances( new FileReader("C:\\Users\\Roberto\\Documents\\GitHub\\Milestone1.arff"));
+            Evaluation eval;
+            convertCsv2Arff(pathM1); //converte il file csv in arff e lo salva in C:\Users\Roberto\Documents\GitHub\Milestone1.arff
+            Instances data = new Instances(new FileReader("C:\\Users\\Roberto\\Documents\\GitHub\\deliverable-ISW2\\"+project.getProjName()+"-results_M1.arff"));
+
             data.setClassIndex(data.numAttributes() - 1);
             Classifier[] classifiers = new Classifier[] {
                     new IBk(), // Albero decisionale
                     new NaiveBayes(), // Naive Bayes
                     new RandomForest() // Foresta casuale
             };
-            //cicla sul numero di istanze
-            /*for (int i = 0; i < data.numInstances(); i++) {
-                System.out.println(data.get(i).classValue()); //stampa il valore della classe per ogni istanza (0 o 1)
-                // il metodo classValue restituisce il valore della classe per l'istanza corrente
-            }*/
+
                 for (int i = 1; i <= halfReleases.size(); i++) {
-                    for (FileTouched fileTouched : javaClasses) {
-                        if (fileTouched.getReleaseIndex() == i) {
-                            System.out.println(fileTouched.getReleaseIndex() + " " + fileTouched.getPathname());
-                        }
-                    }
-                        for (Classifier classifier : classifiers) {
-                            ArffCreator trainingSet = new ArffCreator(trainingFile + EXTENSION, trainingFile); //crea il file arff per il training set
-                            ArffCreator testingSet = new ArffCreator(testingFile + EXTENSION, testingFile); //crea il file arff per il testing set
+                     trainingFilePath = "C:\\Users\\Roberto\\Documents\\GitHub\\deliverable-ISW2\\"+project.getProjName()+"-trainingRelease_"+(i);
+                     testingFilePath = "C:\\Users\\Roberto\\Documents\\GitHub\\deliverable-ISW2\\"+project.getProjName()+"-testingRelease_"+(i);
+                     List<FileTouched> classesRelabeled = relabeling(javaClasses, halfReleases.get(i-1));
+                     writeCsvRelease(classesRelabeled, trainingFilePath+".csv", halfReleases.get(i-1).getId(), true);
+                     writeCsvRelease(javaClasses, testingFilePath+".csv", halfReleases.get(i-1).getId(), false);
 
-                            String[] result = new String[8];
-                            trainingSet.writeData(halfReleases.subList(0, i), javaClasses, true); //scrive i dati nel file arff per il training set
-                            testingSet.writeData(List.of(halfReleases.get(i)),javaClasses, false); //scrive i dati nel file arff per il testing set
-
-                            DataSource source1 = new DataSource(trainingFile + EXTENSION);
+                    convertCsv2Arff(trainingFilePath+".csv"); //converte il file csv in arff e lo salva in C:\Users\Roberto\Documents\GitHub\Milestone1.arff
+                    convertCsv2Arff(testingFilePath+".csv"); //converte il file csv in arff e lo salva in C:\Users\Roberto\Documents\GitHub\Milestone1.arff
+                    int j=0;
+                    for (Classifier classifier : classifiers) {
+                            String[] result = new String[11];
+                            String nameClassifier = classifiers[j].getClass().getSimpleName();
+                            DataSource source1 = new DataSource(trainingFilePath + EXTENSION);
                             Instances training = source1.getDataSet(); //java.io.IOException: Unable to determine structure as arff (Reason: java.io.IOException: premature end of line, read Token[EOL], line 3).
-                            DataSource source2 = new DataSource(testingFile + EXTENSION);
+                            DataSource source2 = new DataSource(testingFilePath + EXTENSION);
                             Instances testing = source2.getDataSet(); //java.io.IOException: Unable to determine structure as arff (Reason: java.io.IOException: premature end of line, read Token[EOL], line 3).
+                        try {
+
 
                             if (featureSelection) {
                                 //create AttributeSelection object
                                 AttributeSelection filter = new AttributeSelection();
                                 //create evaluator and search algorithm objects
-                                CfsSubsetEval eval = new CfsSubsetEval();
+                                CfsSubsetEval subsetEval = new CfsSubsetEval();
                                 GreedyStepwise search = new GreedyStepwise();
                                 //set the algorithm to search backward
                                 search.setSearchBackwards(true);
-                                filter.setEvaluator(eval);
+                                filter.setEvaluator(subsetEval);
                                 filter.setSearch(search);
                                 //specify the dataset
                                 filter.setInputFormat(training);
-                                training = Filter.useFilter(training, filter);
                                 testing = Filter.useFilter(testing, filter);
+                                training = Filter.useFilter(training, filter);
                             }
+
                             int numAttr = training.numAttributes();
                             training.setClassIndex(numAttr - 1); //setta l'indice della classe per l'istanza corrente
                             testing.setClassIndex(numAttr - 1); //setta l'indice della classe per l'istanza corrente
-                            classifier.buildClassifier(training); //costruisce il classificatore
+
+                                    classifier.buildClassifier(training); //costruisce il classificatore
+
                             if (sampling != null) {
                                 FilteredClassifier fc = new FilteredClassifier(); //crea un classificatore filtrato
                                 fc.setClassifier(classifier); //setta il classificatore
@@ -142,65 +143,73 @@ public class Weka {
                                 classifier = fc;
                             }
                             if (costSensitivity != null) {
-                                CostSensitiveClassifier costSensitiveClassifier = new CostSensitiveClassifier();
-                                CostMatrix matrix = new CostMatrix(2);
-                                if (costSensitivity == CostSensitivityType.SENSITIVITY_LEARNING) {
-                                    matrix.setCell(0, 1, 1.0);
-                                    matrix.setCell(1, 0, 10.0);
-                                    costSensitiveClassifier.setCostMatrix(matrix);
-                                    costSensitiveClassifier.setMinimizeExpectedCost(false);
-                                } else {
+
+                                CostSensitiveClassifier costSensitiveClassifier = new CostSensitiveClassifier(); //crea un classificatore sensibile al costo (cost-sensitive)
+                                CostMatrix matrix = new CostMatrix(2); //crea una matrice dei costi 2x2
+                                if (costSensitivity == CostSensitivityType.SENSITIVITY_LEARNING) { //se il tipo di sensibilità al costo è SENSITIVITY_LEARNING
+                                    matrix.setCell(0, 1, 1.0); //setta il valore della cella (0,1) a 1.0 (costo di classificazione di un'istanza negativa come positiva)
+                                    matrix.setCell(1, 0, 10.0); //setta il valore della cella (1,0) a 10.0 (costo di classificazione di un'istanza positiva come negativa)
+                                    costSensitiveClassifier.setCostMatrix(matrix); //setta la matrice dei costi del classificatore
+                                    costSensitiveClassifier.setMinimizeExpectedCost(false); //setta il valore di minimizeExpectedCost a false (non minimizzare il costo atteso)
+                                } else { //se il tipo di sensibilità al costo è COST_THRESHOLD
                                     matrix.setCell(0, 1, 1.0);
                                     matrix.setCell(1, 0, 1.0);
                                     costSensitiveClassifier.setCostMatrix(matrix);
-                                    costSensitiveClassifier.setMinimizeExpectedCost(true);
+                                    costSensitiveClassifier.setMinimizeExpectedCost(true); //setta il valore di minimizeExpectedCost a true (minimizzare il costo atteso)
                                 }
-
                                 costSensitiveClassifier.setClassifier(classifier);
                                 costSensitiveClassifier.buildClassifier(training);
                                 classifier = costSensitiveClassifier;
                             }
-                            Evaluation eval = new Evaluation(testing);
-                            eval.evaluateModel(classifier, testing);
+                                eval = new Evaluation(testing); //crea un oggetto Evaluation per valutare il classificatore sul testing set
+                                eval.evaluateModel(classifier, testing); //valuta il classificatore sul testing set e restituisce un oggetto Evaluation contenente i risultati
+                            }
+                            catch (UnsupportedAttributeTypeException e) { //IBk: cannot handle unary class!
+                                logger.log(Level.OFF, e.getMessage());
+                                continue; //passa alla prossima release
+                            }
+                            catch (ArrayIndexOutOfBoundsException e) {
+                                logger.log(Level.OFF, e.getMessage());
+                                continue; //passa alla prossima release
+                            }
 
-                            result[0] = String.valueOf(eval.numTruePositives(0));
-                            result[1] = String.valueOf(eval.numFalsePositives(0));
-                            result[2] = String.valueOf(eval.numTrueNegatives(0));
-                            result[3] = String.valueOf(eval.numFalseNegatives(0));
-                            result[4] = String.valueOf(eval.precision(0));
-                            result[5] = String.valueOf(eval.recall(0));
-                            result[6] = String.valueOf(eval.kappa());
-                            result[7] = String.valueOf(eval.areaUnderROC(0));
+
+
+                            result[0] = project.getProjName();
+                            result[1] = String.valueOf(i-1);
+                            result[2] = nameClassifier; //nome del classificatore utilizzato
+                            result[3] = String.valueOf(eval.numTruePositives(0));
+                            result[4] = String.valueOf(eval.numFalsePositives(0));
+                            result[5] = String.valueOf(eval.numTrueNegatives(0));
+                            result[6] = String.valueOf(eval.numFalseNegatives(0));
+                            result[7] = String.valueOf(eval.precision(0));
+                            result[8] = String.valueOf(eval.recall(0));
+                            result[9] = String.valueOf(eval.kappa());
+                            result[10] = String.valueOf(eval.areaUnderROC(0));
                             results.add(result);
+                            j++;
+                            CsvUtils.writeOnCsvStrings(results, project.getProjName() + "-results_M2" + ".csv");
                         }
-                        CsvWriter.writeOnCsv(results, project.getProjDirName() + "-results" + ".csv");
-                    }
+                }
     }
-                       /* // Addestra il classificatore sulla finestra di addestramento
-                        classifier.buildClassifier(train);
 
-                        // Valuta il modello sulla finestra di test
-                        Evaluation evaluation = new Evaluation(train);
-                        evaluation.evaluateModel(classifier, test);
+    private List<FileTouched> relabeling(List<FileTouched> javaClasses, Release release) throws ParseException {
+        List<FileTouched> list = new ArrayList<>();
+        for (FileTouched javaClass : javaClasses) {
+            FileTouched fileTouched = javaClass;
+            int commits = javaClass.getCommits().size();
+            for (int i = 0; i < commits; i++) {
+                RevCommit commit = javaClass.getCommits().get(i);
+                if (commit.getAuthorIdent().getWhen().after(release.getDate()) && javaClass.isBuggy()) {
+                    fileTouched.setBuggy(false);//setta la classe come non buggy se è stata modificata dopo la training release
+                    javaClass.setBuggy(false);
+                    break;
+                }
+             }
+            list.add(fileTouched);
+        }
+        return list;
+    }
+}
 
-                        // Ottieni l'accuratezza per questa finestra di test
-                        double precision = evaluation.precision(1);
-                        double recall = evaluation.recall(1);
-                        double kappa = evaluation.kappa();
-                        double auc = evaluation.areaUnderROC(1);
-                        String aucFormatted = String.format("%.3f", auc);
-                        String kappaFormatted = String.format("%.3f", kappa);
-                        String precisionFormatted = String.format("%.3f", precision);
-                        String recallFormatted = String.format("%.3f", recall);
 
-                        // Stampa i risultati dell'valutazione
-                        System.out.println("Finestra " + (i / stepSize + 1));
-                        System.out.println("Precision: " + precisionFormatted);
-                        System.out.println("Recall: " + recallFormatted);
-                        System.out.println("Kappa: " + kappaFormatted);
-                        System.out.println("AUC: " + aucFormatted);
-                        System.out.println("----------------------------------------");*/
-                    }
-                //}
-
-        //}

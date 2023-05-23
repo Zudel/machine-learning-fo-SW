@@ -5,7 +5,6 @@ import java.util.Map;
 import org.eclipse.jgit.revwalk.RevCommit;
 
 public class ReleaseCommits {
-
     private Release release;
     private List<RevCommit> commits;
     private RevCommit lastCommit;
@@ -27,11 +26,9 @@ public class ReleaseCommits {
         this.release = release;
     }
 
-
     public List<RevCommit> getCommits() {
         return commits;
     }
-
 
     public void setCommits(List<RevCommit> commits) {
         this.commits = commits;
@@ -46,7 +43,6 @@ public class ReleaseCommits {
     public void setLastCommit(RevCommit lastCommit) {
         this.lastCommit = lastCommit;
     }
-
 
     public Map<String, String> getJavaClasses() {
         return javaClasses;

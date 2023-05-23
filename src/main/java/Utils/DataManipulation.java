@@ -13,7 +13,6 @@ public class DataManipulation {
         if(summary.contains("T")) {
             formatoData = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss.SSSZ");
         }
-
         else {
             formatoData = new SimpleDateFormat("yyyy-MM-dd");
         }

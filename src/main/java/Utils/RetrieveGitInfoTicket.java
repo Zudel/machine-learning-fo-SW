@@ -1,6 +1,6 @@
 package Utils;
 
-import Control.Metrics;
+
 import Entity.ReleaseCommits;
 import Entity.FileTouched;
 import Entity.IssueTicket;
@@ -15,24 +15,16 @@ import org.eclipse.jgit.diff.RawTextComparator;
 import org.eclipse.jgit.lib.*;
 import org.eclipse.jgit.revwalk.RevCommit;
 import org.eclipse.jgit.revwalk.RevTree;
-import org.eclipse.jgit.revwalk.RevWalk;
 import org.eclipse.jgit.treewalk.CanonicalTreeParser;
 import org.eclipse.jgit.treewalk.TreeWalk;
 import org.eclipse.jgit.util.io.DisabledOutputStream;
-
-import java.io.File;
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.*;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
 
 public class RetrieveGitInfoTicket {
-    private static final String JIRA_REGEX = "\\b(BOOKKEEPER-[0-9]+)\\b"; // Regex per trovare le key di JIRA
-    private static final Pattern JIRA_PATTERN = Pattern.compile(JIRA_REGEX);
-    private String localPath = "C:\\Users\\Roberto\\Documents\\GitHub\\bookkeeper";
     private Git git;
     private Repository repo;
 
@@ -40,103 +32,7 @@ public class RetrieveGitInfoTicket {
         this.repo = repo;
         this.git = git;
     }
-    public void JiraKeywordsExtractor () throws IOException { //metodo per estrarre le key di JIRA dai commit message
-        // Set the path to the local Git repository
 
-
-        // Open the Git repository
-
-
-        // Create a Git object to interact with the repository
-        Git git = new Git(repo);
-
-        // Use a RevWalk to traverse the commit graph
-        try (RevWalk walk = new RevWalk(repo)) {
-            // Get the HEAD commit
-            RevCommit head = walk.parseCommit(repo.resolve("HEAD"));
-
-            // Traverse the commit graph from HEAD to the first commit
-            walk.markStart(head);
-            for (RevCommit commit : walk) {
-                // Get the commit message
-                String commitMessage = commit.getFullMessage();
-
-                // Find JIRA keywords in the commit message
-                Matcher matcher = JIRA_PATTERN.matcher(commitMessage);
-                while (matcher.find()) {
-                    String jiraKeyword = matcher.group(1);
-                    System.out.println("Commit " + commit.getName() + " contains JIRA keyword: " + jiraKeyword);
-                }
-            }
-        }
-
-        git.close();
-        repo.close();
-    }
-
-
-
-    public List<Release> retrieveTouchedFiles(Iterable<RevCommit> commits) throws IOException, ParseException, GitAPIException {
-        Repository repo = Git.open(new File(localPath + "/.git")).getRepository();
-        Git git = new Git(repo);
-        ManageRelease manageRelease = new ManageRelease();
-        List<Release> releases = manageRelease.retrieveReleases("BOOKKEEPER");
-        List<Release> halfReleases = manageRelease.getHalfRelease(releases);
-        List<Release> releaseTouchedFiles = new ArrayList<>();
-
-        for(RevCommit commit : commits) {
-            for(Release release : halfReleases) {
-                if(commit.getAuthorIdent().getWhen().before(release.getDate())) {
-                    Release releaseTouchedFile = new Release(release.getId(), release.getReleaseName(), release.getDate());
-                    RevTree tree = commit.getTree();
-                    try (TreeWalk treeWalk = new TreeWalk(git.getRepository())) {
-                        treeWalk.addTree(tree);
-                        treeWalk.setRecursive(true);
-                        while (treeWalk.next()) {
-                            String path = treeWalk.getPathString();
-
-                            if (path.endsWith(".java") && !path.contains("test")) {
-                                FileTouched fileTouched = new FileTouched(path);
-                                fileTouched.setReleaseIndex(release.getId());
-
-                                //computo tutte le metriche per il file java
-                                Metrics metrics = new Metrics(git);
-                                int cc = metrics.countCC(commit);
-                                System.out.println("cc: " + cc);
-                                //int locm = metrics.CalculateComment(path);
-
-
-                                if(!releaseTouchedFile.getFiles().contains(fileTouched)) { //se il file non è già presente nella release allora lo aggiungo
-                                   // fileTouched.setLoc(loc);
-                                    System.out.println("1");
-                                    //fileTouched.setLocm(locm);
-                                    fileTouched.setCc(cc);
-                                    System.out.println("2");
-                                    //fileTouched.setLoc_Touched(loc_Touched);
-                                    System.out.println("3");
-                                    releaseTouchedFile.addFile(fileTouched);
-                                    System.out.println("4");
-                                }
-                                else { //se il file è già presente nella release allora aggiorno le metriche
-                                    for(FileTouched file : releaseTouchedFile.getFiles()) {
-                                        if(file.equals(fileTouched)) {
-                                            //file.setLoc(file.getLoc() + loc);
-                                            //file.setLocm(file.getLocm() + locm);
-                                            file.setCc(file.getCc() + cc);
-                                            //file.setLoc_Touched(file.getLoc_Touched() + loc_Touched);
-                                        }
-                                    }
-                                }
-                            }
-                        } //fine while
-                        //inserisco la release con i file java nella lista delle release
-                        releaseTouchedFiles.add(releaseTouchedFile);
-                    }
-                }
-            }
-        }
-        return releaseTouchedFiles;
-    }
     private int getAddedLines(DiffFormatter diffFormatter, DiffEntry entry) throws IOException {
 
         int addedLines = 0;
@@ -219,7 +115,6 @@ public class RetrieveGitInfoTicket {
         for(Release rel : releases) {
             relCommAssociations.add(ReleaseCommitsUtil.getCommitsOfRelease(allCommitsList, rel, firstDate));
             firstDate = rel.getDate();
-            System.out.println("Release: " + rel.getId() + " - " + rel.getDate());
 
 
         }

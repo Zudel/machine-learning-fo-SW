@@ -5,8 +5,7 @@ import Entity.ReleaseCommits;
 import Entity.FileTouched;
 import Entity.IssueTicket;
 import Entity.Release;
-import Utils.CsvWriter;
-import Utils.ManageRelease;
+import Utils.CsvUtils;
 import Utils.RetrieveGitInfoTicket;
 import org.eclipse.jgit.api.Git;
 import org.eclipse.jgit.api.errors.GitAPIException;
@@ -19,8 +18,9 @@ import java.util.List;
 public class MetricsAndBugginessFlow {
     private  List<FileTouched> javaClassesList2;
 
-    public MetricsAndBugginessFlow(Repository repo, List<IssueTicket> issueTicketListWithIV, List<Release> halfReleaseList) throws IOException, ParseException, GitAPIException {
+    public MetricsAndBugginessFlow(Repository repo, List<IssueTicket> issueTicketListWithIV, List<Release> halfReleaseList, String projectName) throws IOException, ParseException, GitAPIException {
         Git git = new Git(repo);
+
         RetrieveGitInfoTicket retrieveGitInfoTicket = new RetrieveGitInfoTicket(repo, git);
         List<RevCommit> allCommitsList = retrieveGitInfoTicket.retrieveAllCommits(git);
         List<ReleaseCommits> relCommAssociationsList = retrieveGitInfoTicket.getRelCommAssociations(allCommitsList, halfReleaseList); //associazioni tra release e commit (per ogni release) (commit di ogni release)
@@ -30,7 +30,7 @@ public class MetricsAndBugginessFlow {
 
         ComputeMetrics computeMetrics = new ComputeMetrics(retrieveGitInfoTicket, javaClassesList, allCommitsList, git);
         javaClassesList2 = computeMetrics.doAllMetricsComputation();
-        CsvWriter.writeOnCsv(javaClassesList2);
+        CsvUtils.writeOnCsv(javaClassesList2, projectName);
     }
 
     public List<FileTouched> getJavaClassesList2() {

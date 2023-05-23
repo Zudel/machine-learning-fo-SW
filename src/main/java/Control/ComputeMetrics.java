@@ -130,9 +130,14 @@ public class ComputeMetrics {
         String filePath = path;
         System.out.println("File: " + filePath);
         complexity = 1;
+        CompilationUnit compilationUnit = null;
         if (filePath.endsWith(".java") || !filePath.contains("test")) {
-
-            CompilationUnit compilationUnit = StaticJavaParser.parse(content);
+            try {
+                compilationUnit = StaticJavaParser.parse(content);
+            } catch (Exception e) {
+                return complexity;  // errori di parsing ignorati (caso in avro con il #)
+            }
+        }
 
             // Visita l'AST e calcola la complessità ciclomatica
             new VoidVisitorAdapter<Void>() {
@@ -192,7 +197,8 @@ public class ComputeMetrics {
                     complexity++;
                 }
             }.visit(compilationUnit, null);
-        }
+
+
         return complexity;
     }
 

@@ -14,13 +14,13 @@ public class ArffCreator {
     private String title;
     private String[] header = new String[]{"LOC","NR ","NAuth ",
             "CC","NComm","LOC_Added ","MAX_LOC_Added"," AVG_LOC_Added",
-            "Churn ","MAX_Churn","AVG_Churn ","Buggy {'true', 'false'}"};
+            "Churn ","MAX_Churn","AVG_Churn ","Buggy"};
 
     public ArffCreator(String filePath, String title) {
         this.file = new File(filePath);
         this.title = title;
     }
-    public void writeData(List<Release> releases,List<FileTouched> fileTouchedList, boolean training) throws IOException {
+    public void writeData(Release release,List<FileTouched> fileTouchedList, boolean training) throws IOException {
         FileWriter fileWriter = new FileWriter(this.file);
         PrintWriter printWriter = new PrintWriter(fileWriter);
         //Titolo
@@ -31,25 +31,43 @@ public class ArffCreator {
         }
         // Dati
         printWriter.println("@data");
-        for (int i =0; i<= releases.size(); i++){ //devo mettere la lista delle classi, che non stanno nella release!
-            for(FileTouched javaClass: fileTouchedList){
-                if(javaClass.getReleaseIndex() != i)
-                    continue;
-                System.out.println("file: " + javaClass.getPathname() + " id: " + javaClass.getReleaseIndex() + " loc: " + javaClass.getSize() + " churn: " + javaClass.getChurn());
+        if (training){
+            for (int i =1; i < release.getId(); i++) { //devo mettere la lista delle classi, che non stanno nella release!
+                for (FileTouched javaClass : fileTouchedList) {
+                    if (javaClass.getReleaseIndex() >= i)
+                        continue;
+                        String data = javaClass.getSize() + "," +
+                        javaClass.getNRev() + "," +
+                        javaClass.getNAuth() + "," +
+                        javaClass.getCc() + "," +
+                        javaClass.getLocm() + "," +
+                        javaClass.getLocAdded() + "," +
+                        javaClass.getMaxLocAdded() + "," +
+                        javaClass.getAvgLocAdded() + "," +
+                        javaClass.getChurn() + "," +
+                        javaClass.getMaxChurn() + "," +
+                        javaClass.getAvgChurn() +
+                        "," + javaClass.isBuggy();
+                        printWriter.println(data);
+                }
+            }
+        }
 
-                String data = javaClass.getSize() +","+
-                        javaClass.getNRev() +","+
-                        javaClass.getNAuth() +","+
-                        javaClass.getCc() +","+
-                        javaClass.getLocm() +","+
-                        javaClass.getLocAdded() +","+
-                        javaClass.getMaxLocAdded() +","+
-                        javaClass.getAvgLocAdded() +","+
-                        javaClass.getChurn() +","+
-                        javaClass.getMaxChurn() +","+
-                        javaClass.getAvgChurn();
-                if(training){
-                    data += ","+javaClass.isBuggy();
+        else {
+            for (FileTouched javaClass : fileTouchedList) {
+                if (javaClass.getReleaseIndex() == release.getId()) {
+                    String data = javaClass.getSize() + "," +
+                            javaClass.getNRev() + "," +
+                            javaClass.getNAuth() + "," +
+                            javaClass.getCc() + "," +
+                            javaClass.getLocm() + "," +
+                            javaClass.getLocAdded() + "," +
+                            javaClass.getMaxLocAdded() + "," +
+                            javaClass.getAvgLocAdded() + "," +
+                            javaClass.getChurn() + "," +
+                            javaClass.getMaxChurn() + "," +
+                            javaClass.getAvgChurn() +
+                            "," + javaClass.isBuggy();
                     printWriter.println(data);
                 }
             }

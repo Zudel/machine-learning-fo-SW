@@ -7,7 +7,6 @@ import java.util.List;
 
 public class FileTouched {
     private String pathname;
-    private int loc;
     private int releaseIndex;
     private int nRev;
     private int nAuth;
@@ -31,13 +30,13 @@ public class FileTouched {
 
     public FileTouched(String file, int id){
         this.pathname = file;
-        this.loc = 0;
         this.releaseIndex = id;
+        this.commits = new ArrayList<>();
     }
 
     public FileTouched(String file){
         this.pathname = file;
-        this.loc = 0;
+        this.size = 0;
         this.avgLocAdded = 0;
         this.maxLocAdded = 0;
         this.locAdded = 0;
@@ -55,7 +54,6 @@ public class FileTouched {
     public FileTouched(String key, String value, Release release) {
         this.pathname = key;
         this.content = value;
-        this.loc = 0;
         this.avgLocAdded = 0;
         this.maxLocAdded = 0;
         this.locAdded = 0;
@@ -181,6 +179,8 @@ public class FileTouched {
     public double getAvgChurn() {
         return avgChurn;
     }
+
+
 
     /**
      * @param avgChurn the avgChurn to set
