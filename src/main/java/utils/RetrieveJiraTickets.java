@@ -18,13 +18,14 @@ import static utils.ManageRelease.retrieveReleases;
  * */
 public class RetrieveJiraTickets {
     private static String rel= "released";
-    private static String relDate="releaseDate";
     private String dataFormattata2Injected;
     private String key;
     private JSONObject json2;
     private String fixVersion;
     private int ivIndex;
     private Release ov;
+    private String RELEASEDATE = "releaseDate";
+    private String RELEASEVERSION = "versions";
 
 
     public List<IssueTicket> retrieveTickets(String projName) throws IOException, ParseException {
@@ -51,11 +52,11 @@ public class RetrieveJiraTickets {
                //estraggo tutte le informazioni che mi servono dal JSON dei report e le salvo in variabili locali
                key = issues.getJSONObject(i % 1000).get("key").toString(); //Get the JSONObject value associated with a key.
                JSONObject fields = issues.getJSONObject(i % 1000).getJSONObject("fields"); //Get the JSONObject value associated with a fields.
-               JSONArray listAV = fields.getJSONArray("versions"); //Get the JSONArray value associated with a versions affected.
+               JSONArray listAV = fields.getJSONArray(RELEASEVERSION); //Get the JSONArray value associated with a versions affected.
 
-               if (!listAV.isEmpty() && issues.getJSONObject(i % 1000).getJSONObject("fields").getJSONArray("versions").getJSONObject(0).has("releaseDate") && issues.getJSONObject(i % 1000).getJSONObject("fields").getJSONArray("versions").getJSONObject(0).has("name")) { //se la lista non è vuota
-                   injectedVersion = issues.getJSONObject(i % 1000).getJSONObject("fields").getJSONArray("versions").getJSONObject(0).get("name").toString();
-                   injectedVersionDate = issues.getJSONObject(i % 1000).getJSONObject("fields").getJSONArray("versions").getJSONObject(0).get("releaseDate").toString();
+               if (!listAV.isEmpty() && issues.getJSONObject(i % 1000).getJSONObject("fields").getJSONArray(RELEASEVERSION).getJSONObject(0).has(RELEASEDATE) && issues.getJSONObject(i % 1000).getJSONObject("fields").getJSONArray("versions").getJSONObject(0).has("name")) { //se la lista non è vuota
+                   injectedVersion = issues.getJSONObject(i % 1000).getJSONObject("fields").getJSONArray(RELEASEVERSION).getJSONObject(0).get("name").toString();
+                   injectedVersionDate = issues.getJSONObject(i % 1000).getJSONObject("fields").getJSONArray(RELEASEVERSION).getJSONObject(0).get(RELEASEDATE).toString();
                    dataFormattata2Injected = new DataManipulation().dataManipulationFormat(injectedVersionDate);
                }
                if (listAV.isEmpty())
@@ -97,21 +98,20 @@ public class RetrieveJiraTickets {
                                }
                                if(ov.getId() == -1)
                                    ov.setId(fvIndex);
-                               if (ov.getId() <= fv.getId() && iv.getId() < fv.getId() && (injectedVersion.equals(fixVersion) == false)){
+                               if (ov.getId() <= fv.getId() && iv.getId() < fv.getId() && !(injectedVersion.equals(fixVersion))){
                                     IssueTicket ticket = new IssueTicket(key, iv, fv, ov);
                                    tickets.add(ticket); //aggiungo il ticket alla lista dei ticket
                                }
                            }
-
                    }
            }
       } while (i < total);
         return tickets;
     }
 
-    private Release getRelease(List<Release> releases, Date Date) {
+    private Release getRelease(List<Release> releases, Date date) {
         for (Release release : releases) {
-            if (release.getDate().after(Date)) {
+            if (release.getDate().after(date)) {
                 return release;
             }
         }

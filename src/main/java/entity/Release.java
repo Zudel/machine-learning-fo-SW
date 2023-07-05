@@ -20,7 +20,7 @@ public class Release {
 
     }
 
-    public Release(int id, String name, Date date) throws ParseException {
+    public Release(int id, String name, Date date)  {
         this.releaseidex = id;
         this.releaseName = name;
         this.date = date;
