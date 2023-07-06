@@ -3,7 +3,7 @@ package utils;
 public class RetrieveProject {
         private String project ;
         private String projectDir;
-        private String deliverableProjectPath = "C:\\Users\\Roberto\\Documents\\GitHub\\deliverable-ISW2\\";
+        private String deliverableProjectPath = "C:\\Users\\Roberto\\Documents\\GitHub";
         public String getProjName() {
             return project;
         }
