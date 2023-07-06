@@ -71,14 +71,6 @@ public class RetrieveJiraTickets {
                    injectedVersion = "N/A";
 
                ivDate = dataFormattata2Injected == null ? null : new DataManipulation().convertStringToDate(dataFormattata2Injected);
-               if (!issues.getJSONObject(i % 1000).getJSONObject(field).getJSONArray("fixVersions").isEmpty()) {
-                   fixVersion = issues.getJSONObject(i % 1000).getJSONObject(field).getJSONArray("fixVersions").getJSONObject(0).get("name").toString();
-                   String fixVersionDate = issues.getJSONObject(i % 1000).getJSONObject(field).getString("resolutiondate");
-                   fvDate = new DataManipulation().convertStringToDate(fixVersionDate);
-               } else {
-                   fixVersion = "N/A";
-                   fvDate = null;
-               }
                //estraggo la data di apertura del bug
                tickets(i, projName);
            }
@@ -107,6 +99,14 @@ public class RetrieveJiraTickets {
                 return consistentTickets;
     }
     private void tickets(Integer i,String projName ) throws ParseException, IOException {
+        if (!issues.getJSONObject(i % 1000).getJSONObject(field).getJSONArray("fixVersions").isEmpty()) {
+            fixVersion = issues.getJSONObject(i % 1000).getJSONObject(field).getJSONArray("fixVersions").getJSONObject(0).get("name").toString();
+            String fixVersionDate = issues.getJSONObject(i % 1000).getJSONObject(field).getString("resolutiondate");
+            fvDate = new DataManipulation().convertStringToDate(fixVersionDate);
+        } else {
+            fixVersion = "N/A";
+            fvDate = null;
+        }
         String openingDate = issues.getJSONObject(i % 1000).getJSONObject(field).get("created").toString();
         String openingVersionDateFormatted = new DataManipulation().dataManipulationFormat(openingDate);
         Date ovDate = new DataManipulation().convertStringToDate(openingVersionDateFormatted);
