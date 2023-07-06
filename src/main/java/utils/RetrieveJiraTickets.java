@@ -127,18 +127,7 @@ public class RetrieveJiraTickets {
             ov.setId(ovIndex);
             iv = new Release(injectedVersion, ivDate); //creo la release di apertura
             if (iv.getReleaseName() != null) { //se la versione affetta esiste e la data di chiusura del bug esiste
-                if (iv.getReleaseName().equals("N/A"))
-                    iv.setId(0);
-                else {
-                    ivIndex = mr.getReleaseIndexByDate(releases, iv.getDate());
-                    iv.setId(ivIndex);
-                }
-                if(ov.getId() == -1)
-                    ov.setId(fvIndex);
-                if (ov.getId() <= fv.getId() && iv.getId() < fv.getId() && !(injectedVersion.equals(fixVersion))){
-                    IssueTicket ticket = new IssueTicket(key, iv, fv, ov);
-                    tickets.add(ticket); //aggiungo il ticket alla lista dei ticket
-                }
+                setTickets();
             }
         }
     }
