@@ -33,6 +33,10 @@ public class RetrieveJiraTickets {
     private Date fvDate;
     private Date ivDate;
     private List<IssueTicket> tickets = new ArrayList<>();
+    private ManageRelease mr;
+    private Release iv;
+    private int fvIndex;
+    private Release fv;
 
 
     public List<IssueTicket> retrieveTickets(String projName) throws IOException, ParseException {
@@ -111,17 +115,17 @@ public class RetrieveJiraTickets {
         String openingVersionDateFormatted = new DataManipulation().dataManipulationFormat(openingDate);
         Date ovDate = new DataManipulation().convertStringToDate(openingVersionDateFormatted);
 
-        ManageRelease mr = new ManageRelease();
+        mr = new ManageRelease();
         releases = retrieveReleases(projName);
         ov = getRelease(releases, ovDate);
         //considero solo i bug che hanno una versione affetta precedente alla data di apertura del bug
         if (ov!= null && ovDate != null && fvDate!= null  && fvDate.after(ovDate)) { //se la data di rilascio della versione affetta (esiste) è precedente alla data di apertura del bug e
 
-            int fvIndex = mr.getReleaseIndexByName(releases, fixVersion); //prendo l'indice della release
-            Release fv = new Release(fixVersion, fvDate, fvIndex); //creo la release di chiusura
+            fvIndex = mr.getReleaseIndexByName(releases, fixVersion); //prendo l'indice della release
+            fv = new Release(fixVersion, fvDate, fvIndex); //creo la release di chiusura
             int ovIndex = mr.getReleaseIndexByDate(releases, ov.getDate());
             ov.setId(ovIndex);
-            Release iv = new Release(injectedVersion, ivDate); //creo la release di apertura
+            iv = new Release(injectedVersion, ivDate); //creo la release di apertura
             if (iv.getReleaseName() != null) { //se la versione affetta esiste e la data di chiusura del bug esiste
                 if (iv.getReleaseName().equals("N/A"))
                     iv.setId(0);
@@ -136,6 +140,20 @@ public class RetrieveJiraTickets {
                     tickets.add(ticket); //aggiungo il ticket alla lista dei ticket
                 }
             }
+        }
+    }
+    private void setTickets(){
+        if (iv.getReleaseName().equals("N/A"))
+            iv.setId(0);
+        else {
+            ivIndex = mr.getReleaseIndexByDate(releases, iv.getDate());
+            iv.setId(ivIndex);
+        }
+        if(ov.getId() == -1)
+            ov.setId(fvIndex);
+        if (ov.getId() <= fv.getId() && iv.getId() < fv.getId() && !(injectedVersion.equals(fixVersion))){
+            IssueTicket ticket = new IssueTicket(key, iv, fv, ov);
+            tickets.add(ticket); //aggiungo il ticket alla lista dei ticket
         }
     }
 }
