@@ -14,7 +14,6 @@ import weka.classifiers.meta.CostSensitiveClassifier;
 import weka.classifiers.meta.FilteredClassifier;
 import weka.classifiers.trees.RandomForest;
 import weka.core.Instances;
-import weka.core.UnsupportedAttributeTypeException;
 import weka.core.converters.ConverterUtils.DataSource;
 import weka.filters.Filter;
 import weka.filters.supervised.attribute.AttributeSelection;
@@ -110,7 +109,7 @@ public class Weka {
                             if(sampling != null)
                                 classifier = setSampling(sampling,classifier, training); //setta il campionamento
                             if (costSensitivity != null) {
-                                classifier = setCostSensitive(costSensitivity, classifier, training); //setta la sensibilità al costo
+                                classifier = setCostSensitive( classifier, training); //setta la sensibilità al costo
                             }
                                 eval = new Evaluation(testing); //crea un oggetto Evaluation per valutare il classificatore sul testing set
                                 eval.evaluateModel(classifier, testing); //valuta il classificatore sul testing set e restituisce un oggetto Evaluation contenente i risultati
@@ -191,7 +190,7 @@ public class Weka {
         return classifier;
     }
 
-    private Classifier setCostSensitive(CostSensitivityType costSensitivityType, Classifier classifier, Instances training) throws Exception {
+    private Classifier setCostSensitive(Classifier classifier, Instances training) throws Exception {
         CostSensitiveClassifier costSensitiveClassifier = new CostSensitiveClassifier(); //crea un classificatore sensibile al costo (cost-sensitive)
         CostMatrix matrix = new CostMatrix(2); //crea una matrice dei costi 2x2
         if (costSensitivity == CostSensitivityType.SENSITIVITY_LEARNING) { //se il tipo di sensibilità al costo è SENSITIVITY_LEARNING
