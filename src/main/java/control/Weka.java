@@ -50,7 +50,7 @@ public class Weka {
         this.project = project;
         this.halfReleases = halfReleases;
         this.javaClasses = javaClasses;
-        this.pathM1 =  "C:\\Users\\Roberto\\Documents\\GitHub\\"+project.getProjName()+"-results_M1.csv";
+        this.pathM1 =  "C:\\Users\\Roberto\\Documents\\GitHub\\deliverable-ISW2\\"+project.getProjName()+"-results_M1.csv";
     }
         public  void wekaWork() throws Exception {
             //retrieve the data from Milestone1.arff
@@ -58,7 +58,7 @@ public class Weka {
             List<String[]> results = new ArrayList<>();
             Evaluation eval;
             convertCsv2Arff(pathM1); //converte il file csv in arff e lo salva in C:\Users\Roberto\Documents\GitHub\Milestone1.arff
-            Instances data = new Instances(new FileReader( "C:\\Users\\Roberto\\Documents\\GitHub\\"+project.getProjName()+"-results_M1.arff"));
+            Instances data = new Instances(new FileReader( "C:\\Users\\Roberto\\Documents\\GitHub\\deliverable-ISW2\\"+project.getProjName()+"-results_M1.arff"));
 
             data.setClassIndex(data.numAttributes() - 1);
             Classifier[] classifiers = new Classifier[] {
@@ -68,8 +68,8 @@ public class Weka {
             };
 
                 for (int i = 1; i <= halfReleases.size(); i++) {
-                     trainingFilePath =  "C:\\Users\\Roberto\\Documents\\GitHub\\"+project.getProjName()+"-trainingRelease_"+(i);
-                     testingFilePath =  "C:\\Users\\Roberto\\Documents\\GitHub\\"+project.getProjName()+"-testingRelease_"+(i);
+                     trainingFilePath =  "C:\\Users\\Roberto\\Documents\\GitHub\\deliverable-ISW2\\"+project.getProjName()+"-trainingRelease_"+(i);
+                     testingFilePath =  "C:\\Users\\Roberto\\Documents\\GitHub\\deliverable-ISW2\\"+project.getProjName()+"-testingRelease_"+(i);
                      List<FileTouched> classesRelabeled = relabeling(javaClasses, halfReleases.get(i-1));
                      writeCsvRelease(classesRelabeled, trainingFilePath+".csv", halfReleases.get(i-1).getId(), true);
                      writeCsvRelease(javaClasses, testingFilePath+".csv", halfReleases.get(i-1).getId(), false);
