@@ -22,18 +22,26 @@ public class RetrieveJiraTickets {
     private String key;
     private JSONObject json2;
     private String fixVersion;
+    private String field = "fields";
     private int ivIndex;
     private Release ov;
-    private String RELEASEDATE = "releaseDate";
-    private String RELEASEVERSION = "versions";
+    private String releaseDate = "releaseDate";
+    private String releaseVersions = "versions";
+    private JSONArray issues;
+    private List<Release> releases;
+    private String injectedVersion;
+    private Date fvDate;
+    private Date ivDate;
+    private List<IssueTicket> tickets = new ArrayList<>();
 
 
     public List<IssueTicket> retrieveTickets(String projName) throws IOException, ParseException {
-       String injectedVersion=null;
+
        String injectedVersionDate;
-       Integer j, i = 0, total;
-        Date fvDate;
-       List<IssueTicket> tickets = new ArrayList<>();
+       Integer  i = 0;
+       Integer j;
+       Integer total;
+
       //Get JSON API for closed bugs w/ AV in the project
       do {
          //Only gets a max of 1000 at a time, so must do this multiple times if bugs >1000
@@ -45,27 +53,27 @@ public class RetrieveJiraTickets {
                   + i.toString() + "&maxResults=" + j.toString();
 
           json2 = readJsonFromUrl(url);
-          JSONArray issues = json2.getJSONArray("issues"); //Get the JSONArray value associated with a issues.
+          issues = json2.getJSONArray("issues"); //Get the JSONArray value associated with a issues.
           total = json2.getInt("total");
            for (; i < total && i < j; i++) {
 
                //estraggo tutte le informazioni che mi servono dal JSON dei report e le salvo in variabili locali
                key = issues.getJSONObject(i % 1000).get("key").toString(); //Get the JSONObject value associated with a key.
-               JSONObject fields = issues.getJSONObject(i % 1000).getJSONObject("fields"); //Get the JSONObject value associated with a fields.
-               JSONArray listAV = fields.getJSONArray(RELEASEVERSION); //Get the JSONArray value associated with a versions affected.
+               JSONObject fields = issues.getJSONObject(i % 1000).getJSONObject(field); //Get the JSONObject value associated with a fields.
+               JSONArray listAV = fields.getJSONArray(releaseVersions); //Get the JSONArray value associated with a versions affected.
 
-               if (!listAV.isEmpty() && issues.getJSONObject(i % 1000).getJSONObject("fields").getJSONArray(RELEASEVERSION).getJSONObject(0).has(RELEASEDATE) && issues.getJSONObject(i % 1000).getJSONObject("fields").getJSONArray("versions").getJSONObject(0).has("name")) { //se la lista non è vuota
-                   injectedVersion = issues.getJSONObject(i % 1000).getJSONObject("fields").getJSONArray(RELEASEVERSION).getJSONObject(0).get("name").toString();
-                   injectedVersionDate = issues.getJSONObject(i % 1000).getJSONObject("fields").getJSONArray(RELEASEVERSION).getJSONObject(0).get(RELEASEDATE).toString();
+               if (!listAV.isEmpty() && issues.getJSONObject(i % 1000).getJSONObject(field).getJSONArray(releaseVersions).getJSONObject(0).has(releaseDate) && issues.getJSONObject(i % 1000).getJSONObject(field).getJSONArray("versions").getJSONObject(0).has("name")) { //se la lista non è vuota
+                   injectedVersion = issues.getJSONObject(i % 1000).getJSONObject(field).getJSONArray(releaseVersions).getJSONObject(0).get("name").toString();
+                   injectedVersionDate = issues.getJSONObject(i % 1000).getJSONObject(field).getJSONArray(releaseVersions).getJSONObject(0).get(releaseDate).toString();
                    dataFormattata2Injected = new DataManipulation().dataManipulationFormat(injectedVersionDate);
                }
                if (listAV.isEmpty())
                    injectedVersion = "N/A";
 
-               Date ivDate = dataFormattata2Injected == null ? null : new DataManipulation().convertStringToDate(dataFormattata2Injected);
-               if (!issues.getJSONObject(i % 1000).getJSONObject("fields").getJSONArray("fixVersions").isEmpty()) {
-                   fixVersion = issues.getJSONObject(i % 1000).getJSONObject("fields").getJSONArray("fixVersions").getJSONObject(0).get("name").toString();
-                   String fixVersionDate = issues.getJSONObject(i % 1000).getJSONObject("fields").getString("resolutiondate");
+               ivDate = dataFormattata2Injected == null ? null : new DataManipulation().convertStringToDate(dataFormattata2Injected);
+               if (!issues.getJSONObject(i % 1000).getJSONObject(field).getJSONArray("fixVersions").isEmpty()) {
+                   fixVersion = issues.getJSONObject(i % 1000).getJSONObject(field).getJSONArray("fixVersions").getJSONObject(0).get("name").toString();
+                   String fixVersionDate = issues.getJSONObject(i % 1000).getJSONObject(field).getString("resolutiondate");
                    fvDate = new DataManipulation().convertStringToDate(fixVersionDate);
                } else {
                    fixVersion = "N/A";
@@ -73,14 +81,13 @@ public class RetrieveJiraTickets {
                }
                //estraggo la data di apertura del bug
 
-               String openingDate = issues.getJSONObject(i % 1000).getJSONObject("fields").get("created").toString();
+               String openingDate = issues.getJSONObject(i % 1000).getJSONObject(field).get("created").toString();
                String openingVersionDateFormatted = new DataManipulation().dataManipulationFormat(openingDate);
                Date ovDate = new DataManipulation().convertStringToDate(openingVersionDateFormatted);
 
                ManageRelease mr = new ManageRelease();
-               List<Release> releases = retrieveReleases(projName);
+               releases = retrieveReleases(projName);
                ov = getRelease(releases, ovDate);
-
                    //considero solo i bug che hanno una versione affetta precedente alla data di apertura del bug
                    if (ov!= null && ovDate != null && fvDate!= null  && fvDate.after(ovDate)) { //se la data di rilascio della versione affetta (esiste) è precedente alla data di apertura del bug e
 
@@ -128,5 +135,37 @@ public class RetrieveJiraTickets {
                     }
                 }
                 return consistentTickets;
+    }
+    private void tickets(Integer i,String projName ) throws ParseException, IOException {
+        String openingDate = issues.getJSONObject(i % 1000).getJSONObject(field).get("created").toString();
+        String openingVersionDateFormatted = new DataManipulation().dataManipulationFormat(openingDate);
+        Date ovDate = new DataManipulation().convertStringToDate(openingVersionDateFormatted);
+
+        ManageRelease mr = new ManageRelease();
+        releases = retrieveReleases(projName);
+        ov = getRelease(releases, ovDate);
+        //considero solo i bug che hanno una versione affetta precedente alla data di apertura del bug
+        if (ov!= null && ovDate != null && fvDate!= null  && fvDate.after(ovDate)) { //se la data di rilascio della versione affetta (esiste) è precedente alla data di apertura del bug e
+
+            int fvIndex = mr.getReleaseIndexByName(releases, fixVersion); //prendo l'indice della release
+            Release fv = new Release(fixVersion, fvDate, fvIndex); //creo la release di chiusura
+            int ovIndex = mr.getReleaseIndexByDate(releases, ov.getDate());
+            ov.setId(ovIndex);
+            Release iv = new Release(injectedVersion, ivDate); //creo la release di apertura
+            if (iv.getReleaseName() != null) { //se la versione affetta esiste e la data di chiusura del bug esiste
+                if (iv.getReleaseName().equals("N/A"))
+                    iv.setId(0);
+                else {
+                    ivIndex = mr.getReleaseIndexByDate(releases, iv.getDate());
+                    iv.setId(ivIndex);
+                }
+                if(ov.getId() == -1)
+                    ov.setId(fvIndex);
+                if (ov.getId() <= fv.getId() && iv.getId() < fv.getId() && !(injectedVersion.equals(fixVersion))){
+                    IssueTicket ticket = new IssueTicket(key, iv, fv, ov);
+                    tickets.add(ticket); //aggiungo il ticket alla lista dei ticket
+                }
+            }
+        }
     }
 }

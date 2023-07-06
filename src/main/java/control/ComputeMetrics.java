@@ -130,7 +130,7 @@ public class ComputeMetrics {
             try {
                 compilationUnit = StaticJavaParser.parse(content);
             } catch (Exception e) {
-                return complexity;  // errori di parsing ignorati (caso in avro con il #)
+                return 1;  // errori di parsing ignorati (caso in avro con il #)
             }
         }
 

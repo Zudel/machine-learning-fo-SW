@@ -43,7 +43,6 @@ public class Weka {
     private String trainingFilePath;
     private String testingFilePath;
     private static final Logger logger = Logger.getLogger(Weka.class.getName());
-    private static String deliverableProjectPath = "C:\\Users\\Roberto\\Documents\\GitHub\\deliverable-ISW2\\";
 
     public Weka(RetrieveProject project, List<Release> halfReleases, List<FileTouched> javaClasses, boolean featureSelection, SamplingType sampling, CostSensitivityType costSensitivity) {
         this.costSensitivity = costSensitivity;
@@ -52,7 +51,7 @@ public class Weka {
         this.project = project;
         this.halfReleases = halfReleases;
         this.javaClasses = javaClasses;
-        this.pathM1 = deliverableProjectPath+project.getProjName()+"-results_M1.csv";
+        this.pathM1 = project.getDeliverableProjectPath()+project.getProjName()+"-results_M1.csv";
     }
         public  void wekaWork() throws Exception {
             //retrieve the data from Milestone1.arff
@@ -60,7 +59,7 @@ public class Weka {
             List<String[]> results = new ArrayList<>();
             Evaluation eval;
             convertCsv2Arff(pathM1); //converte il file csv in arff e lo salva in C:\Users\Roberto\Documents\GitHub\Milestone1.arff
-            Instances data = new Instances(new FileReader(deliverableProjectPath+project.getProjName()+"-results_M1.arff"));
+            Instances data = new Instances(new FileReader(project.getDeliverableProjectPath()+project.getProjName()+"-results_M1.arff"));
 
             data.setClassIndex(data.numAttributes() - 1);
             Classifier[] classifiers = new Classifier[] {
@@ -70,8 +69,8 @@ public class Weka {
             };
 
                 for (int i = 1; i <= halfReleases.size(); i++) {
-                     trainingFilePath = deliverableProjectPath+project.getProjName()+"-trainingRelease_"+(i);
-                     testingFilePath = deliverableProjectPath+project.getProjName()+"-testingRelease_"+(i);
+                     trainingFilePath = project.getDeliverableProjectPath()+project.getProjName()+"-trainingRelease_"+(i);
+                     testingFilePath = project.getDeliverableProjectPath()+project.getProjName()+"-testingRelease_"+(i);
                      List<FileTouched> classesRelabeled = relabeling(javaClasses, halfReleases.get(i-1));
                      writeCsvRelease(classesRelabeled, trainingFilePath+".csv", halfReleases.get(i-1).getId(), true);
                      writeCsvRelease(javaClasses, testingFilePath+".csv", halfReleases.get(i-1).getId(), false);
@@ -104,74 +103,23 @@ public class Weka {
                                 testing = Filter.useFilter(testing, filter);
                                 training = Filter.useFilter(training, filter);
                             }
-
                             int numAttr = training.numAttributes();
                             training.setClassIndex(numAttr - 1); //setta l'indice della classe per l'istanza corrente
                             testing.setClassIndex(numAttr - 1); //setta l'indice della classe per l'istanza corrente
-
-                                    classifier.buildClassifier(training); //costruisce il classificatore
-
-                            if (sampling != null) {
-                                FilteredClassifier fc = new FilteredClassifier(); //crea un classificatore filtrato
-                                fc.setClassifier(classifier); //setta il classificatore
-                                Filter filter = null;
-                                switch (sampling) {
-                                    case UNDERSAMPLING -> {
-                                        filter = new SpreadSubsample(); //crea un filtro di tipo SpreadSubsample
-                                        String[] opts = new String[]{"-M", "1.0"};
-                                        filter.setOptions(opts); //
-                                    }
-                                    case OVERSAMPLING -> {
-                                        filter = new Resample();
-                                        filter.setOptions(new String[]{"-B", "1.0", "-Z", "130.3"});
-                                        filter.setInputFormat(training);
-                                    }
-                                      /**
-                                     "-C", "0": Imposta il valore dell'opzione "class index" a 0. Questo indica che l'etichetta di classe è posizionata nella prima colonna dei dati.
-                                     "-K", "5": Imposta il numero di vicini da utilizzare nell'algoritmo SMOTE a 5. Questo determina quanti campioni sintetici verranno generati per ogni campione di classe minoritaria.
-                                     "-P", "100.0": Imposta il livello di sovracampionamento (over-sampling) desiderato al 100%. Questo significa che il numero di campioni di classe minoritaria nel set di dati verrà raddoppiato.
-                                     "-S", "1": Imposta il seme random per l'algoritmo SMOTE a 1. Questo garantisce la riproducibilità dei risultati, poiché lo stesso seme genererà gli stessi campioni sintetici ogni volta che viene eseguito il filtro SMOTE.*/
-
-                                    case SMOTE -> { //Synthetic Minority Over-sampling Technique per il bilanciamento delle classi.
-                                        filter = new SMOTE();
-                                        filter.setOptions(new String[]{"-C", "0", "-K", "5", "-P", "100.0", "-S", "1"});
-                                        filter.setInputFormat(training); //setta il formato di input del filtro con il training set
-                                    }
-                                }
-                                fc.setFilter(filter);
-                                fc.buildClassifier(training);
-                                classifier = fc;
-                            }
+                            classifier.buildClassifier(training); //costruisce il classificatore
+                            if(sampling != null)
+                                classifier = setSampling(sampling,classifier, training); //setta il campionamento
                             if (costSensitivity != null) {
-
-                                CostSensitiveClassifier costSensitiveClassifier = new CostSensitiveClassifier(); //crea un classificatore sensibile al costo (cost-sensitive)
-                                CostMatrix matrix = new CostMatrix(2); //crea una matrice dei costi 2x2
-                                if (costSensitivity == CostSensitivityType.SENSITIVITY_LEARNING) { //se il tipo di sensibilità al costo è SENSITIVITY_LEARNING
-                                    matrix.setCell(0, 1, 1.0); //setta il valore della cella (0,1) a 1.0 (costo di classificazione di un'istanza negativa come positiva)
-                                    matrix.setCell(1, 0, 10.0); //setta il valore della cella (1,0) a 10.0 (costo di classificazione di un'istanza positiva come negativa)
-                                    costSensitiveClassifier.setCostMatrix(matrix); //setta la matrice dei costi del classificatore
-                                    costSensitiveClassifier.setMinimizeExpectedCost(false); //setta il valore di minimizeExpectedCost a false (non minimizzare il costo atteso)
-                                } else { //se il tipo di sensibilità al costo è COST_THRESHOLD
-                                    matrix.setCell(0, 1, 1.0);
-                                    matrix.setCell(1, 0, 1.0);
-                                    costSensitiveClassifier.setCostMatrix(matrix);
-                                    costSensitiveClassifier.setMinimizeExpectedCost(true); //setta il valore di minimizeExpectedCost a true (minimizzare il costo atteso)
-                                }
-                                costSensitiveClassifier.setClassifier(classifier);
-                                costSensitiveClassifier.buildClassifier(training);
-                                classifier = costSensitiveClassifier;
+                                classifier = setCostSensitive(costSensitivity, classifier, training); //setta la sensibilità al costo
                             }
                                 eval = new Evaluation(testing); //crea un oggetto Evaluation per valutare il classificatore sul testing set
                                 eval.evaluateModel(classifier, testing); //valuta il classificatore sul testing set e restituisce un oggetto Evaluation contenente i risultati
                             }
-                            catch (UnsupportedAttributeTypeException e) { //IBk: cannot handle unary class!
+                            catch (Exception e) { //IBk: cannot handle unary class!
                                 logger.log(Level.OFF, e.getMessage());
                                 continue; //passa alla prossima release
                             }
-                            catch (ArrayIndexOutOfBoundsException e) {
-                                logger.log(Level.OFF, e.getMessage());
-                                continue; //passa alla prossima release
-                            }
+
 
                             result[0] = project.getProjName();
                             result[1] = String.valueOf(i-1);
@@ -207,6 +155,59 @@ public class Weka {
             list.add(fileTouched);
         }
         return list;
+    }
+
+    private Classifier setSampling(SamplingType sampling, Classifier classifier, Instances training) throws Exception {
+
+            FilteredClassifier fc = new FilteredClassifier(); //crea un classificatore filtrato
+            fc.setClassifier(classifier); //setta il classificatore
+            Filter filter = null;
+            switch (sampling) {
+                case UNDERSAMPLING -> {
+                    filter = new SpreadSubsample(); //crea un filtro di tipo SpreadSubsample
+                    String[] opts = new String[]{"-M", "1.0"};
+                    filter.setOptions(opts); //
+                }
+                case OVERSAMPLING -> {
+                    filter = new Resample();
+                    filter.setOptions(new String[]{"-B", "1.0", "-Z", "130.3"});
+                    filter.setInputFormat(training);
+                }
+                /**
+                 "-C", "0": Imposta il valore dell'opzione "class index" a 0. Questo indica che l'etichetta di classe è posizionata nella prima colonna dei dati.
+                 "-K", "5": Imposta il numero di vicini da utilizzare nell'algoritmo SMOTE a 5. Questo determina quanti campioni sintetici verranno generati per ogni campione di classe minoritaria.
+                 "-P", "100.0": Imposta il livello di sovracampionamento (over-sampling) desiderato al 100%. Questo significa che il numero di campioni di classe minoritaria nel set di dati verrà raddoppiato.
+                 "-S", "1": Imposta il seme random per l'algoritmo SMOTE a 1. Questo garantisce la riproducibilità dei risultati, poiché lo stesso seme genererà gli stessi campioni sintetici ogni volta che viene eseguito il filtro SMOTE.*/
+
+                case SMOTE -> { //Synthetic Minority Over-sampling Technique per il bilanciamento delle classi.
+                    filter = new SMOTE();
+                    filter.setOptions(new String[]{"-C", "0", "-K", "5", "-P", "100.0", "-S", "1"});
+                    filter.setInputFormat(training); //setta il formato di input del filtro con il training set
+                }
+            }
+            fc.setFilter(filter);
+            fc.buildClassifier(training);
+            classifier = fc;
+        return classifier;
+    }
+
+    private Classifier setCostSensitive(CostSensitivityType costSensitivityType, Classifier classifier, Instances training) throws Exception {
+        CostSensitiveClassifier costSensitiveClassifier = new CostSensitiveClassifier(); //crea un classificatore sensibile al costo (cost-sensitive)
+        CostMatrix matrix = new CostMatrix(2); //crea una matrice dei costi 2x2
+        if (costSensitivity == CostSensitivityType.SENSITIVITY_LEARNING) { //se il tipo di sensibilità al costo è SENSITIVITY_LEARNING
+            matrix.setCell(0, 1, 1.0); //setta il valore della cella (0,1) a 1.0 (costo di classificazione di un'istanza negativa come positiva)
+            matrix.setCell(1, 0, 10.0); //setta il valore della cella (1,0) a 10.0 (costo di classificazione di un'istanza positiva come negativa)
+            costSensitiveClassifier.setCostMatrix(matrix); //setta la matrice dei costi del classificatore
+            costSensitiveClassifier.setMinimizeExpectedCost(false); //setta il valore di minimizeExpectedCost a false (non minimizzare il costo atteso)
+        } else { //se il tipo di sensibilità al costo è COST_THRESHOLD
+            matrix.setCell(0, 1, 1.0);
+            matrix.setCell(1, 0, 1.0);
+            costSensitiveClassifier.setCostMatrix(matrix);
+            costSensitiveClassifier.setMinimizeExpectedCost(true); //setta il valore di minimizeExpectedCost a true (minimizzare il costo atteso)
+        }
+        costSensitiveClassifier.setClassifier(classifier);
+        costSensitiveClassifier.buildClassifier(training);
+        return costSensitiveClassifier;
     }
 }
 

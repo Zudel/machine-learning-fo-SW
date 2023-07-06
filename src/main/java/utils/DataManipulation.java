@@ -17,7 +17,7 @@ public class DataManipulation {
         }
 
         // Conversione della stringa in una data
-        if (formatoData != null)
+       // if (formatoData != null)
              data = formatoData.parse(summary);
 
         // Definizione del formato di output desiderato
