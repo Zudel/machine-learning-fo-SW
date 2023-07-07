@@ -98,8 +98,7 @@ public  class CsvUtils {
         }
     }
     public static String  absolutePath()  {
-        String path = Paths.get("").toAbsolutePath().toString();
-        return path;
+        return Paths.get("").toAbsolutePath().toString()+"\\";
     }
 }
 
