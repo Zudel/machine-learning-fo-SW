@@ -28,6 +28,7 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 
 import static utils.Csv2Arff.convertCsv2Arff;
+import static utils.CsvUtils.absolutePath;
 import static utils.CsvUtils.writeCsvRelease;
 
 public class Weka {
@@ -41,7 +42,6 @@ public class Weka {
     private CostSensitivityType costSensitivity;
     private String trainingFilePath;
     private String testingFilePath;
-    private static final String PATH_PROJECT = "C:\\Users\\Roberto\\Documents\\GitHub\\deliverable-ISW2\\";
     private static final Logger logger = Logger.getLogger(Weka.class.getName());
 
     public Weka(RetrieveProject project, List<Release> halfReleases, List<FileTouched> javaClasses, boolean featureSelection, SamplingType sampling, CostSensitivityType costSensitivity) {
@@ -51,7 +51,7 @@ public class Weka {
         this.project = project;
         this.halfReleases = halfReleases;
         this.javaClasses = javaClasses;
-        this.pathM1 =  PATH_PROJECT+project.getProjName()+"-results_M1.csv";
+        this.pathM1 =  CsvUtils.absolutePath()+project.getProjName()+"-results_M1.csv";
     }
         public  void wekaWork() throws Exception {
             //retrieve the data from Milestone1.arff
@@ -59,7 +59,7 @@ public class Weka {
             List<String[]> results = new ArrayList<>();
             Evaluation eval;
             convertCsv2Arff(pathM1); //converte il file csv in arff e lo salva in C:\Users\Roberto\Documents\GitHub\Milestone1.arff
-            Instances data = new Instances(new FileReader( PATH_PROJECT+project.getProjName()+"-results_M1.arff"));
+            Instances data = new Instances(new FileReader( absolutePath()+project.getProjName()+"-results_M1.arff"));
 
             data.setClassIndex(data.numAttributes() - 1);
             Classifier[] classifiers = new Classifier[] {
@@ -69,8 +69,8 @@ public class Weka {
             };
 
                 for (int i = 1; i <= halfReleases.size(); i++) {
-                     trainingFilePath =  PATH_PROJECT+project.getProjName()+"-trainingRelease_"+(i);
-                     testingFilePath =  PATH_PROJECT+project.getProjName()+"-testingRelease_"+(i);
+                     trainingFilePath =  absolutePath()+project.getProjName()+"-trainingRelease_"+(i);
+                     testingFilePath =  absolutePath()+project.getProjName()+"-testingRelease_"+(i);
                      List<FileTouched> classesRelabeled = relabeling(javaClasses, halfReleases.get(i-1));
                      writeCsvRelease(classesRelabeled, trainingFilePath+".csv", halfReleases.get(i-1).getId(), true);
                      writeCsvRelease(javaClasses, testingFilePath+".csv", halfReleases.get(i-1).getId(), false);

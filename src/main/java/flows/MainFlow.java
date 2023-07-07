@@ -17,7 +17,7 @@ import static utils.ManageRelease.retrieveReleases;
 public class MainFlow {
     public static void main(String[] args) throws Exception {
         RetrieveJiraTickets retrieveJiraTickets = new RetrieveJiraTickets();
-        RetrieveProject project = new RetrieveProject(true); //true = AVRO false = BOOKKEEPER
+        RetrieveProject project = new RetrieveProject(false); //true = AVRO false = BOOKKEEPER
         String localPath = project.getProjDirName();
         Repository repo = Git.open(new File(localPath + "/.git")).getRepository();
         List<Release> releases = retrieveReleases(project.getProjName());
