@@ -200,22 +200,21 @@ public class ComputeMetrics {
     public int calculateComment(String path, String content) {
         int commentLines = 0;
         if (path.endsWith(".java") && !path.contains("test")) {
-            Scanner scanner;
-            scanner = new Scanner(content);
-            while (scanner.hasNextLine()) {
-                String line = scanner.nextLine();
-                if (line.startsWith("//")) {
-                    commentLines++;
-                }
-                if (line.startsWith("/*")) {
-                    commentLines++;
-                    while (!line.endsWith("*/")) {
-                        line = scanner.nextLine();
+            try(Scanner scanner = new Scanner(content)){
+                while (scanner.hasNextLine()) {
+                    String line = scanner.nextLine();
+                    if (line.startsWith("//")) {
                         commentLines++;
+                    }
+                    if (line.startsWith("/*")) {
+                        commentLines++;
+                        while (!line.endsWith("*/")) {
+                            line = scanner.nextLine();
+                            commentLines++;
+                        }
                     }
                 }
             }
-
         }
         return commentLines;
     }
