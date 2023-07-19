@@ -13,3 +13,23 @@ U
 %src/main/java/entity/IssueTicket.java,2\a\2add5a3197ee25dbb5c00827a8d036dcf5cf8acc
 \
 ,src/main/java/utils/RetrieveJiraTickets.java,f\2\f289dc3e947f08b9255fa08521a747692305451b
+Q
+!src/main/java/utils/Csv2Arff.java,6\2\6217a6d741b33d285a44ed886522a28077a95344
+Q
+!src/main/java/utils/CsvUtils.java,1\a\1a50eefd0d6eb9736a2763f51f0f034d5f81044d
+X
+(src/main/java/utils/RetrieveProject.java,d\a\da928b882db1c56edb27b96914c3f3750b51d4d8
+Y
+)src/main/java/control/ComputeMetrics.java,0\b\0bc917946dd01841a4254eb7141b4abcd6c50c6b
+Q
+!src/main/java/flows/MainFlow.java,6\6\66b200124da0ddf793a68792d973876730cec8b8
+O
+src/main/java/control/Weka.java,3\6\36cc6ca5f000c05774a0bb5b60fe0229cf324d9d
+7
+pom.xml,4\4\442292b8a7efeabbe4cc176709b833b1792140ec
+`
+0src/main/java/flows/MetricsAndBugginessFlow.java,3\f\3ff8897bd3f3cff4b02018357117eba4e048572e
+\
+,src/main/java/utils/CostSensitivityType.java,5\c\5c0991e4de62e792ff797c0b23de0f1e250bda7a
+Q
+!src/main/java/flows/WekaFlow.java,f\f\ffe7b4fb0abbde75203d06d6238850f01f75bde8

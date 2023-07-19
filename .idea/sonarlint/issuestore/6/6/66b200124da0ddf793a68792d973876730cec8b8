@@ -1,0 +1,11 @@
+
+\
+java:S2095"AUse try-with-resources or close this "Git" in a "finally" clause.(ÕÉÉ½ÿÿÿÿÿ
+q
+java:S1128"TRemove this unnecessary import: same package classes are always implicitly imported.(“•ý¥8¾î–Ö’1
+v
+java:S1128"TRemove this unnecessary import: same package classes are always implicitly imported.(ìþ»·ûÿÿÿÿ8¾î–Ö’1
+q
+java:S1128"TRemove this unnecessary import: same package classes are always implicitly imported.(ÌËøÖ8¿î–Ö’1
+[
+java:S1128">Remove this unused import 'utils.CsvUtils.CsvReader.leggiCsv'.(ÇÓÀ‡8¿î–Ö’1
