@@ -1,4 +1,4 @@
-# Machine Learning for Software Engineering
+# Machine Learning for Software Engineering project
 
 In our analysis, we will focus on defect prediction in classes and how this prediction can help us prioritize testing tasks more effectively. The goal is to classify a list of classes based on their likelihood of being defective.
 
